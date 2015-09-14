@@ -1,12 +1,12 @@
 phosphor-command
 ================
 
-[![Build Status](https://travis-ci.org/phosphorjs/phosphor-commands.svg)](https://travis-ci.org/phosphorjs/phosphor-command?branch=master)
-[![Coverage Status](https://coveralls.io/repos/phosphorjs/phosphor-commands/badge.svg?branch=master&service=github)](https://coveralls.io/github/phosphorjs/phosphor-command?branch=master)
+[![Build Status](https://travis-ci.org/phosphorjs/phosphor-command.svg)](https://travis-ci.org/phosphorjs/phosphor-command?branch=master)
+[![Coverage Status](https://coveralls.io/repos/phosphorjs/phosphor-command/badge.svg?branch=master&service=github)](https://coveralls.io/github/phosphorjs/phosphor-command?branch=master)
 
 A module for expressing the command pattern.
 
-[API Docs](http://phosphorjs.github.io/phosphor-commands/api/)
+[API Docs](http://phosphorjs.github.io/phosphor-command/api/)
 
 Package Install
 ---------------
@@ -73,8 +73,8 @@ Bundle for the Browser
 Follow the package install instructions first.
 
 ```bash
-npm install --save-dev browserify browserify-css
-browserify -g browserify-css myapp.js -o mybundle.js
+npm install --save-dev browserify
+browserify myapp.js -o mybundle.js
 ```
 
 Usage Examples

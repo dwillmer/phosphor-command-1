@@ -36,8 +36,7 @@
   ],
   "keywords": [
     "command",
-    "commands",
-    "manager"
+    "commands"
   ],
   "author": "S. Chris Colbert <sccolbert@gmail.com>",
   "license": "BSD-3-Clause",

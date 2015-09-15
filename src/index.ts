@@ -89,17 +89,10 @@ class DelegateCommand implements ICommand {
   /**
    * Construct a new delegate command.
    */
-  constructor(handler: any, id: string, caption: string) {
-    this._handler = handler;
-    this.id = id;
-    this.caption = caption;
-  }
-
-  /**
-   * Runs the handler, part of the ICommand interface.
-   */
-  execute() {
-    this._handler();
+  constructor(options: any) {
+    this._handler = options.handler;
+    this._id = options.id;
+    this._caption = options.caption;
   }
 
   /**
@@ -126,14 +119,18 @@ class DelegateCommand implements ICommand {
   }
 
   /**
-   * Unique identifier for the command
+   * Unique identifier for the command, 
    */
-  id: string;
+  get id(): string {
+    return this._id;
+  }
 
   /**
    * A longer descriptive string for the command behaviour.
    */
-  caption: string;
+  get caption(): string {
+    return this._caption;
+  }
 
   /**
    * A signal that is fired when the disabled flag changes.
@@ -146,13 +143,19 @@ class DelegateCommand implements ICommand {
   }
 
   /**
-   * A flag to define whether the command is disabled.
+   * Runs the handler, part of the ICommand interface.
    */
-  private _disabled = false;
+  execute() {
+    if (this.disabled) {
+      console.log("Not executing disabled command: " + this.id);
+    } else {
+      this._handler();
+    }
+  }
 
-  /**
-   * The callable to be run when the command is executed.
-   */
+  private _id: string;
+  private _caption: string;
+  private _disabled = false;
   private _handler: any;
 }
 

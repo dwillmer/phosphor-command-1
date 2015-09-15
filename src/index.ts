@@ -17,6 +17,7 @@ import {
  *
  * **See also:** https://en.wikipedia.org/wiki/Command_pattern
  */
+export
 interface ICommand {
   /**
    * A signal emitted when the command's [[disabled]] state changes.
@@ -67,3 +68,35 @@ interface ICommand {
    */
   execute(): void;
 }
+
+
+
+/**
+ * Convenience implementation of a DelegateCommand, which
+ * wraps objects conforming to ICommand, providing the ICommand
+ * interface without requiring a subclass.
+ * 
+ * @param _handler - The callable to be executed when execute() is
+ *        called on the DelegateCommand.
+ *
+ * @param id - A unique identifier for this command. Namespaces can
+ *        be defined using ':' separators.
+ *
+ * @param caption - A longer descriptive string to inform users about
+ *        the functionality/nuances of this command.
+ */
+export
+  class DelegateCommand implements ICommand {
+  disabled = false;
+  id: string;
+  caption: string;
+  disabledChanged: ISignal<ICommand, boolean>;
+
+  constructor(private _handler: any, id: string, caption: string) {
+  }
+
+  execute() {
+    this._handler();
+  }
+}
+

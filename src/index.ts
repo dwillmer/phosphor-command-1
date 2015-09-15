@@ -70,92 +70,121 @@ interface ICommand {
 }
 
 
+/**
+ * The options object for instantiating a delegate command.
+ */
+export
+interface IDelegateCommandOptions {
+  /**
+   * The id for the command.
+   */
+  id: string;
+
+  /**
+   * The caption for the command.
+   */
+  caption: string;
+
+  /**
+   * The callback for the command.
+   */
+  handler: () => void;
+}
+
 
 /**
- * Convenience implementation of a DelegateCommand, which
- * wraps objects conforming to ICommand, providing the ICommand
- * interface without requiring a subclass.
+ * A concrete implementation of [[ICommand]].
+ *
+ * A `DelegateCommand` wraps a callback to facilitate easy creation
+ * of command objects without requiring subclassing or repetition.
  */
 export
 class DelegateCommand implements ICommand {
-
   /**
    * A signal emitted when the disabled state changes.
    *
    * **See also:** [[disabledChanged]]
    */
   static disabledChangedSignal = new Signal<DelegateCommand, boolean>();
-  
+
   /**
    * Construct a new delegate command.
+   *
+   * @param options - The initialization options for the command.
    */
-  constructor(options: any) {
-    this._handler = options.handler;
+  constructor(options: IDelegateCommandOptions) {
     this._id = options.id;
     this._caption = options.caption;
+    this._handler = options.handler;
   }
 
   /**
-   * Get the disabled state.
-   */
-  get disabled(): boolean {
-    return this._disabled;
-  }
- 
-  /**
-   * Set the disabled state.
+   * A signal emitted when the disabled stated changes.
    *
    * #### Notes
-   * Fires the disabledChanged signal if the new value is different
-   * to the old one.
+   * This is a pure delegate to the [[disabledChangedSignal]].
    */
-  set disabled(value: boolean) {
-    var oldValue = this._disabled;
-    this._disabled = value;
-
-    if(oldValue !== this._disabled) {
-      this.disabledChanged.emit(this._disabled);
-    }
+  get disabledChanged(): ISignal<DelegateCommand, boolean> {
+    return DelegateCommand.disabledChangedSignal.bind(this);
   }
 
   /**
-   * Unique identifier for the command, 
+   * Get the unique identifier for the command.
+   *
+   * #### Notes
+   * This is a read-only property.
    */
   get id(): string {
     return this._id;
   }
 
   /**
-   * A longer descriptive string for the command behaviour.
+   * Get the descriptive caption for the command.
+   *
+   * #### Notes
+   * This is a read-only property.
    */
   get caption(): string {
     return this._caption;
   }
 
   /**
-   * A signal that is fired when the disabled flag changes.
-   *
-   * #### Notes
-   * This is a pure delegate to the [[disabledChangedSignal]].
-   */ 
-  get disabledChanged(): ISignal<ICommand, boolean> {
-    return DelegateCommand.disabledChangedSignal.bind(this);
+   * Get the disabled state of the command.
+   */
+  get disabled(): boolean {
+    return this._disabled;
   }
 
   /**
-   * Runs the handler, part of the ICommand interface.
+   * Set the disabled state of the command.
+   *
+   * #### Notes
+   * This will emit the [[disabledChangedSignal]] if the state changes.
+   */
+  set disabled(value: boolean) {
+    if (this._disabled !== value) {
+      this._disabled = value;
+      this.disabledChanged.emit(value);
+    }
+  }
+
+  /**
+   * Execute the command and invoke its handler.
+   *
+   * #### Notes
+   * If the command is disabled, the handler will not be invoked and
+   * an error will be logged to the console.
    */
   execute() {
-    if (this.disabled) {
-      console.log("Not executing disabled command: " + this.id);
+    if (this._disabled) {
+      console.warn("Not executing disabled command: " + this._id);
     } else {
-      this._handler();
+      this._handler.call(void 0);
     }
   }
 
   private _id: string;
   private _caption: string;
   private _disabled = false;
-  private _handler: any;
+  private _handler: () => void;
 }
-

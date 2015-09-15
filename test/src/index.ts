@@ -18,103 +18,128 @@ describe('phosphor-command', () => {
 
   describe('DelegateCommand', () => {
 
-    it('should execute the handler', () => {
+    describe('#disabledChanged', () => {
 
-      var count = 0;
-      var handler = () => { count += 1; };
-      var options = {
-        handler: handler,
-        id: "test:id",
-        caption: "Test Caption"
-      };
-      var comm = new DelegateCommand(options);
-      expect(count).to.be(0);
-      comm.execute();
-      expect(count).to.be(1);
-
-    });
-
-    it('should emit when disabled state changes', () => {
-
-      var handler = () => { console.log('Test'); };
-      var options = {
-        handler: handler,
-        id: "test.id",
-        caption: "Test Caption"
-      };
-      var comm = new DelegateCommand(options);
-      var disabledState = false;
-      var count = 0;
-      var changeHandler = (sender: any, value: boolean) => { 
-        disabledState = value; 
-        count += 1;
-      };
-      comm.disabledChanged.connect(changeHandler, this);
-
-      expect(disabledState).to.be(false);
-      expect(count).to.be(0);
-      comm.disabled = true;
-      expect(disabledState).to.be(true);
-      expect(count).to.be(1);
-
-      // and check it doesn't fire when there's no change.
-      comm.disabled = true;
-      expect(count).to.be(1);
+      it('should be emitted when the disabled state changes', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        var count = 0;
+        var disabledState = false;
+        cmd.disabledChanged.connect((sender: any, value: boolean) => {
+          disabledState = value;
+          count++;
+        });
+        expect(disabledState).to.be(false);
+        expect(count).to.be(0);
+        cmd.disabled = true;
+        expect(disabledState).to.be(true);
+        expect(count).to.be(1);
+        cmd.disabled = true;
+        expect(count).to.be(1);
+        expect(disabledState).to.be(true);
+        cmd.disabled = false;
+        expect(count).to.be(2);
+        expect(disabledState).to.be(false);
+      });
 
     });
 
-    it('should not execute when disabled', () => {
+    describe('#id', () => {
 
-      var count = 0;
-      var handler = () => { count += 1; };
-      var options = {
-        handler: handler,
-        id: "test:id",
-        caption: "Test Caption"
-      };
-      var comm = new DelegateCommand(options);
+      it('should return the command id', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        expect(cmd.id).to.be('test.id');
+      });
 
-      expect(count).to.be(0);
-      comm.execute();
-      expect(count).to.be(1);
-      comm.disabled = true;
-      comm.execute();
-      expect(count).to.be(1);
-
-    });
-
-    it('should have read-only id', () => {
-
-      var handler = () => {console.log('test');};
-      var id = "test:id";
-      var options = {
-        handler: handler,
-        id: id,
-        caption: "Test Caption"
-      };
-
-      var comm = new DelegateCommand(options);
-
-      expect(() => { comm.id = "should:error"; }).to.throwError();
+      it('should be read-only', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        expect(() => { cmd.id = 'should:error'; }).to.throwError();
+      });
 
     });
 
-    it('should have read-only caption', () => {
+    describe('#caption', () => {
 
-      var handler = () => { console.log('test'); };
-      var id = "test:id";
-      var options = {
-        handler: handler,
-        id: id,
-        caption: "Test Caption"
-      };
+      it('should return the command caption', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        expect(cmd.caption).to.be('Test Caption');
+      });
 
-      var comm = new DelegateCommand(options);
+      it('should be read-only', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        expect(() => { cmd.caption = 'ShouldError'; }).to.throwError();
+      });
 
-      expect(() => { comm.caption = "ShouldError"; }).to.throwError();
-      
     });
 
-  }); // DelegateCommand
+    describe('#disabled', () => {
 
-}); // phosphor-command
+      it('should return the disabled state', () => {
+        var cmd = new DelegateCommand({
+          id: 'test.id',
+          caption: 'Test Caption',
+          handler: () => console.log('Test'),
+        });
+        expect(cmd.disabled).to.be(false);
+        cmd.disabled = true;
+        expect(cmd.disabled).to.be(true);
+      });
+
+    });
+
+    describe('#execute()', () => {
+
+      it('should invoke the handler', () => {
+        var count = 0;
+        var cmd = new DelegateCommand({
+          id: 'test:id',
+          caption: 'Test Caption',
+          handler: () => count++,
+        });
+        expect(count).to.be(0);
+        cmd.execute();
+        expect(count).to.be(1);
+      });
+
+      it('should not invoke the handler when disabled', () => {
+        var count = 0;
+        var cmd = new DelegateCommand({
+          id: 'test:id',
+          caption: 'Test Caption',
+          handler: () => count++,
+        });
+        expect(count).to.be(0);
+        cmd.execute();
+        expect(count).to.be(1);
+        cmd.disabled = true;
+        cmd.execute();
+        expect(count).to.be(1);
+        cmd.disabled = false;
+        cmd.execute();
+        expect(count).to.be(2);
+      });
+
+    });
+
+  });
+
+});

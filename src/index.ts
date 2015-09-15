@@ -8,7 +8,7 @@
 'use strict';
 
 import {
-  ISignal
+  ISignal, Signal
 } from 'phosphor-signaling';
 
 
@@ -17,6 +17,7 @@ import {
  *
  * **See also:** https://en.wikipedia.org/wiki/Command_pattern
  */
+export
 interface ICommand {
   /**
    * A signal emitted when the command's [[disabled]] state changes.
@@ -67,3 +68,94 @@ interface ICommand {
    */
   execute(): void;
 }
+
+
+
+/**
+ * Convenience implementation of a DelegateCommand, which
+ * wraps objects conforming to ICommand, providing the ICommand
+ * interface without requiring a subclass.
+ */
+export
+class DelegateCommand implements ICommand {
+
+  /**
+   * A signal emitted when the disabled state changes.
+   *
+   * **See also:** [[disabledChanged]]
+   */
+  static disabledChangedSignal = new Signal<DelegateCommand, boolean>();
+  
+  /**
+   * Construct a new delegate command.
+   */
+  constructor(options: any) {
+    this._handler = options.handler;
+    this._id = options.id;
+    this._caption = options.caption;
+  }
+
+  /**
+   * Get the disabled state.
+   */
+  get disabled(): boolean {
+    return this._disabled;
+  }
+ 
+  /**
+   * Set the disabled state.
+   *
+   * #### Notes
+   * Fires the disabledChanged signal if the new value is different
+   * to the old one.
+   */
+  set disabled(value: boolean) {
+    var oldValue = this._disabled;
+    this._disabled = value;
+
+    if(oldValue !== this._disabled) {
+      this.disabledChanged.emit(this._disabled);
+    }
+  }
+
+  /**
+   * Unique identifier for the command, 
+   */
+  get id(): string {
+    return this._id;
+  }
+
+  /**
+   * A longer descriptive string for the command behaviour.
+   */
+  get caption(): string {
+    return this._caption;
+  }
+
+  /**
+   * A signal that is fired when the disabled flag changes.
+   *
+   * #### Notes
+   * This is a pure delegate to the [[disabledChangedSignal]].
+   */ 
+  get disabledChanged(): ISignal<ICommand, boolean> {
+    return DelegateCommand.disabledChangedSignal.bind(this);
+  }
+
+  /**
+   * Runs the handler, part of the ICommand interface.
+   */
+  execute() {
+    if (this.disabled) {
+      console.log("Not executing disabled command: " + this.id);
+    } else {
+      this._handler();
+    }
+  }
+
+  private _id: string;
+  private _caption: string;
+  private _disabled = false;
+  private _handler: any;
+}
+

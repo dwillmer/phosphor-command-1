@@ -177,7 +177,7 @@ class DelegateCommand implements ICommand {
    */
   execute() {
     if (this._disabled) {
-      console.error("Command " + this._id + " is disabled.");
+      console.warn("Not executing disabled command: " + this._id);
     } else {
       this._handler.call(void 0);
     }

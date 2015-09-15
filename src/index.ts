@@ -8,7 +8,7 @@
 'use strict';
 
 import {
-  ISignal
+  ISignal, Signal
 } from 'phosphor-signaling';
 
 
@@ -75,28 +75,84 @@ interface ICommand {
  * Convenience implementation of a DelegateCommand, which
  * wraps objects conforming to ICommand, providing the ICommand
  * interface without requiring a subclass.
- * 
- * @param _handler - The callable to be executed when execute() is
- *        called on the DelegateCommand.
- *
- * @param id - A unique identifier for this command. Namespaces can
- *        be defined using ':' separators.
- *
- * @param caption - A longer descriptive string to inform users about
- *        the functionality/nuances of this command.
  */
 export
-  class DelegateCommand implements ICommand {
-  disabled = false;
-  id: string;
-  caption: string;
-  disabledChanged: ISignal<ICommand, boolean>;
+class DelegateCommand implements ICommand {
 
-  constructor(private _handler: any, id: string, caption: string) {
+  /**
+   * A signal emitted when the disabled state changes.
+   *
+   * **See also:** [[disabledChanged]]
+   */
+  static disabledChangedSignal = new Signal<DelegateCommand, boolean>();
+  
+  /**
+   * Construct a new delegate command.
+   */
+  constructor(handler: any, id: string, caption: string) {
+    this._handler = handler;
+    this.id = id;
+    this.caption = caption;
   }
 
+  /**
+   * Runs the handler, part of the ICommand interface.
+   */
   execute() {
     this._handler();
   }
+
+  /**
+   * Get the disabled state.
+   */
+  get disabled(): boolean {
+    return this._disabled;
+  }
+ 
+  /**
+   * Set the disabled state.
+   *
+   * #### Notes
+   * Fires the disabledChanged signal if the new value is different
+   * to the old one.
+   */
+  set disabled(value: boolean) {
+    var oldValue = this._disabled;
+    this._disabled = value;
+
+    if(oldValue !== this._disabled) {
+      this.disabledChanged.emit(this._disabled);
+    }
+  }
+
+  /**
+   * Unique identifier for the command
+   */
+  id: string;
+
+  /**
+   * A longer descriptive string for the command behaviour.
+   */
+  caption: string;
+
+  /**
+   * A signal that is fired when the disabled flag changes.
+   *
+   * #### Notes
+   * This is a pure delegate to the [[disabledChangedSignal]].
+   */ 
+  get disabledChanged(): ISignal<ICommand, boolean> {
+    return DelegateCommand.disabledChangedSignal.bind(this);
+  }
+
+  /**
+   * A flag to define whether the command is disabled.
+   */
+  private _disabled = false;
+
+  /**
+   * The callable to be run when the command is executed.
+   */
+  private _handler: any;
 }
 

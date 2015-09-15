@@ -37,6 +37,23 @@ describe('phosphor-command', () => {
 
     });
 
+    it('should emit when disabled state changes', () => {
+
+      var handler = () => { console.log('Test'); };
+      var comm = new DelegateCommand(handler, "test.id", "Test Caption");
+
+      var state = false;
+      var changeHandler = (sender: any, value: boolean) => { 
+        state = value; 
+      };
+      comm.disabledChanged.connect(changeHandler, this)
+
+      expect(state).to.be(false);
+      comm.disabled = true;
+      expect(state).to.be(true);
+
+    });
+
   }); // DelegateCommand
 
 }); // phosphor-command

@@ -14,177 +14,150 @@ import {
 
 /**
  * An object which implements the command pattern.
- *
- * **See also:** https://en.wikipedia.org/wiki/Command_pattern
  */
 export
 interface ICommand {
   /**
-   * A signal emitted when the command's [[disabled]] state changes.
+   * A signal emitted when the command's [[canExecute]] state changes.
    *
    * #### Notes
-   * The signal arg is the current `disabled` state of the command.
+   * Consumers of the command can subscribe to this signal in order to
+   * know when to re-query for the current executable state and update
+   * their visual representations accordingly.
    */
-  disabledChanged: ISignal<ICommand, boolean>;
+  canExecuteChanged: ISignal<ICommand, void>;
 
   /**
-   * A read-only unique identifier for the Command.
+   * Test whether the command can execute in its current state.
+   *
+   * @param args - The proposed arguments for the command. These should
+   *   be simple JSON types. If the command does not require arguments,
+   *   this may be `null`.
+   *
+   * @returns `true` if the command can execute with the given args,
+   *   `false` otherwise.
    *
    * #### Notes
-   * The recommended id format is lower-cased, hyphen-separated,
-   * and colon-namespaced: `'my-project-namespace:my-command-id'`.
+   * When the potential result of this method changes at runtime, the
+   * [[canExecuteChanged]] signal should be emitted.
    */
-  id: string;
+  canExecute(args: any): boolean;
 
   /**
-   * A read-only single-line description of the command.
+   * Execute the command with the specified arguments.
+   *
+   * @param args - The arguments for the command. These should be
+   *   simple JSON types. If the command does not require arguments,
+   *   this may be `null`.
    *
    * #### Notes
-   * The caption will be used by some UIs to show a description of
-   * the command to the user.
+   * Calling `execute` when `canExecute` returns `false` will result
+   * in undefined behavior.
    */
-  caption: string;
-
-  /**
-   * Whether the command is currently disabled.
-   *
-   * #### Notes
-   * A disabled command cannot be executed.
-   *
-   * This will be read-only for some commands, and read-write for
-   * others as appropriate.
-   *
-   * **See also:** [[disabledChanged]]
-   */
-  disabled: boolean;
-
-  /**
-   * A method called to execute the command.
-   *
-   * #### Notes
-   * If this method is invoked when the command is disabled, it must
-   * be a no-op. Preferably, the command implementation will log an
-   * appropriate error message when this occurs.
-   */
-  execute(): void;
-}
-
-
-/**
- * The options object for instantiating a delegate command.
- */
-export
-interface IDelegateCommandOptions {
-  /**
-   * The id for the command.
-   */
-  id: string;
-
-  /**
-   * The caption for the command.
-   */
-  caption: string;
-
-  /**
-   * The callback for the command.
-   */
-  handler: () => void;
+  execute(args: any): void;
 }
 
 
 /**
  * A concrete implementation of [[ICommand]].
  *
- * A `DelegateCommand` wraps a callback to facilitate easy creation
- * of command objects without requiring subclassing or repetition.
+ * A `DelegateCommand` wraps a pair of functions to facilitate the easy
+ * creation of commands without requiring subclassing or boilerplate.
  */
 export
 class DelegateCommand implements ICommand {
   /**
-   * A signal emitted when the disabled state changes.
+   * A signal emitted when the command's [[canExecute]] state changes.
    *
-   * **See also:** [[disabledChanged]]
+   * **See also:** [[canExecuteChanged]]
    */
-  static disabledChangedSignal = new Signal<DelegateCommand, boolean>();
+  static canExecuteChangedSignal = new Signal<DelegateCommand, void>();
 
   /**
    * Construct a new delegate command.
    *
-   * @param options - The initialization options for the command.
+   * @param execute - The function which executes the command logic.
+   *
+   * @param canExecute - An optional function which determines whether
+   *   the command can execute in its current state.
    */
-  constructor(options: IDelegateCommandOptions) {
-    this._id = options.id;
-    this._caption = options.caption;
-    this._handler = options.handler;
+  constructor(execute: (args: any) => void, canExecute?: (args: any) => boolean) {
+    this._execute = execute;
+    this._canExecute = canExecute || null;
   }
 
   /**
-   * A signal emitted when the disabled stated changes.
+   * A signal emitted when the command's [[canExecute]] state changes.
    *
    * #### Notes
-   * This is a pure delegate to the [[disabledChangedSignal]].
+   * This is emitted automatically when the [[enabled]] state changes.
+   *
+   * This can be emitted manually by the creator of the command when
+   * the result of the `canExecute` delegate function changes.
    */
-  get disabledChanged(): ISignal<DelegateCommand, boolean> {
-    return DelegateCommand.disabledChangedSignal.bind(this);
+  get canExecuteChanged(): ISignal<DelegateCommand, void> {
+    return DelegateCommand.canExecuteChangedSignal.bind(this);
   }
 
   /**
-   * Get the unique identifier for the command.
+   * Get the enabled state of the delegate command.
+   */
+  get enabled(): boolean {
+    return this._enabled;
+  }
+
+  /**
+   * Set the enabled state of the delegate command.
    *
    * #### Notes
-   * This is a read-only property.
+   * This will emit the [[canExecuteChanged]] if the state changes.
    */
-  get id(): string {
-    return this._id;
-  }
-
-  /**
-   * Get the descriptive caption for the command.
-   *
-   * #### Notes
-   * This is a read-only property.
-   */
-  get caption(): string {
-    return this._caption;
-  }
-
-  /**
-   * Get the disabled state of the command.
-   */
-  get disabled(): boolean {
-    return this._disabled;
-  }
-
-  /**
-   * Set the disabled state of the command.
-   *
-   * #### Notes
-   * This will emit the [[disabledChangedSignal]] if the state changes.
-   */
-  set disabled(value: boolean) {
-    if (this._disabled !== value) {
-      this._disabled = value;
-      this.disabledChanged.emit(value);
+  set enabled(value: boolean) {
+    if (this._enabled === value) {
+      return;
     }
+    this._enabled = value;
+    this.canExecuteChanged.emit(void 0);
   }
 
   /**
-   * Execute the command and invoke its handler.
+   * Test whether the command can execute in its current state.
+   *
+   * @param args - The proposed arguments for the command. These should
+   *   be simple JSON types. If the command does not require arguments,
+   *   this may be `null`.
+   *
+   * @returns `true` if the command can execute with the given args,
+   *   `false` otherwise.
    *
    * #### Notes
-   * If the command is disabled, the handler will not be invoked and
-   * an error will be logged to the console.
+   * If the [[enabled]] flag is set to `false`, this method will always
+   * return `false`. If a `canExecute` function is provided, the result
+   * of that function will be returned. Otherwise, this returns `true`.
    */
-  execute() {
-    if (this._disabled) {
-      console.warn("Not executing disabled command: " + this._id);
-    } else {
-      this._handler.call(void 0);
+  canExecute(args: any): boolean {
+    if (this._enabled && this._canExecute) {
+      return this._canExecute.call(void 0, args);
     }
+    return this._enabled;
   }
 
-  private _id: string;
-  private _caption: string;
-  private _disabled = false;
-  private _handler: () => void;
+  /**
+   * Execute the command with the specified arguments.
+   *
+   * @param args - The arguments for the command. These should be
+   *   simple JSON types. If the command does not require arguments,
+   *   this may be `null`.
+   *
+   * #### Notes
+   * Calling `execute` when `canExecute` returns `false` will result
+   * in undefined behavior.
+   */
+  execute(args: any) {
+    this._execute.call(void 0, args);
+  }
+
+  private _enabled = true;
+  private _execute: (args: any) => void;
+  private _canExecute: (args: any) => boolean;
 }

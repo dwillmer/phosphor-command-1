@@ -10,6 +10,10 @@
 import expect = require('expect.js');
 
 import {
+  Signal
+} from 'phosphor-signaling';
+
+import {
   DelegateCommand
 } from '../../lib/index';
 
@@ -18,124 +22,98 @@ describe('phosphor-command', () => {
 
   describe('DelegateCommand', () => {
 
-    describe('#disabledChanged', () => {
+    describe('.canExecuteChangedSignal', () => {
 
-      it('should be emitted when the disabled state changes', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        var count = 0;
-        var disabledState = false;
-        cmd.disabledChanged.connect((sender: any, value: boolean) => {
-          disabledState = value;
-          count++;
-        });
-        expect(disabledState).to.be(false);
+      it('should be a signal', () => {
+        expect(DelegateCommand.canExecuteChangedSignal instanceof Signal).to.be(true);
+      });
+
+    });
+
+    describe('#constructor()', () => {
+
+      it('should accept a delegate function', () => {
+        let cmd = new DelegateCommand(() => {});
+        expect(cmd instanceof DelegateCommand).to.be(true);
+      });
+
+      it('should accept an optional delegate test function', () => {
+        let cmd = new DelegateCommand(() => {}, () => false);
+        expect(cmd instanceof DelegateCommand).to.be(true);
+      });
+
+    });
+
+    describe('#canExecuteChanged', () => {
+
+      it('should be emitted when the enabled state changes', () => {
+        let cmd = new DelegateCommand(() => {});
+        let count = 0;
+        cmd.canExecuteChanged.connect(() => { count++ });
         expect(count).to.be(0);
-        cmd.disabled = true;
-        expect(disabledState).to.be(true);
+        cmd.enabled = false;
         expect(count).to.be(1);
-        cmd.disabled = true;
-        expect(count).to.be(1);
-        expect(disabledState).to.be(true);
-        cmd.disabled = false;
+        cmd.enabled = true;
         expect(count).to.be(2);
-        expect(disabledState).to.be(false);
+        cmd.enabled = true;
+        expect(count).to.be(2);
       });
 
     });
 
-    describe('#id', () => {
+    describe('#enabled', () => {
 
-      it('should return the command id', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        expect(cmd.id).to.be('test.id');
-      });
-
-      it('should be read-only', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        expect(() => { cmd.id = 'should:error'; }).to.throwError();
+      it('should get and set the enabled state', () => {
+        let cmd = new DelegateCommand(() => {});
+        expect(cmd.enabled).to.be(true);
+        cmd.enabled = false;
+        expect(cmd.enabled).to.be(false);
       });
 
     });
 
-    describe('#caption', () => {
+    describe('#canExecute()', () => {
 
-      it('should return the command caption', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        expect(cmd.caption).to.be('Test Caption');
+      it('should reflect the enabled state', () => {
+        let cmd = new DelegateCommand(() => {});
+        expect(cmd.canExecute(null)).to.be(true);
+        cmd.enabled = false;
+        expect(cmd.canExecute(null)).to.be(false);
       });
 
-      it('should be read-only', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        expect(() => { cmd.caption = 'ShouldError'; }).to.throwError();
+      it('should invoke the delegate function', () => {
+        let args: any = null;
+        let called = false;
+        let func = (a: any) => { called = true; args = a; return false; };
+        let cmd = new DelegateCommand(() => {}, func);
+        let args1 = {};
+        expect(cmd.canExecute(args1)).to.be(false);
+        expect(called).to.be(true);
+        expect(args).to.be(args1);
       });
 
-    });
-
-    describe('#disabled', () => {
-
-      it('should return the disabled state', () => {
-        var cmd = new DelegateCommand({
-          id: 'test.id',
-          caption: 'Test Caption',
-          handler: () => console.log('Test'),
-        });
-        expect(cmd.disabled).to.be(false);
-        cmd.disabled = true;
-        expect(cmd.disabled).to.be(true);
+      it('should not invoke the delegate function when disabled', () => {
+        let called = false;
+        let func = () => { called = true; return true; };
+        let cmd = new DelegateCommand(() => {}, func);
+        cmd.enabled = false;
+        expect(cmd.canExecute(null)).to.be(false);
+        expect(called).to.be(false);
       });
 
     });
 
     describe('#execute()', () => {
 
-      it('should invoke the handler', () => {
-        var count = 0;
-        var cmd = new DelegateCommand({
-          id: 'test:id',
-          caption: 'Test Caption',
-          handler: () => count++,
-        });
-        expect(count).to.be(0);
-        cmd.execute();
-        expect(count).to.be(1);
-      });
-
-      it('should not invoke the handler when disabled', () => {
-        var count = 0;
-        var cmd = new DelegateCommand({
-          id: 'test:id',
-          caption: 'Test Caption',
-          handler: () => count++,
-        });
-        expect(count).to.be(0);
-        cmd.execute();
-        expect(count).to.be(1);
-        cmd.disabled = true;
-        cmd.execute();
-        expect(count).to.be(1);
-        cmd.disabled = false;
-        cmd.execute();
-        expect(count).to.be(2);
+      it('should invoke the delegate function', () => {
+        let args: any = null;
+        let called = false;
+        let func = (a: any) => { called = true; args = a; };
+        let cmd = new DelegateCommand(func);
+        let args1 = {};
+        cmd.execute(args1);
+        expect(called).to.be(true);
+        expect(args).to.be(args1);
       });
 
     });

@@ -1,11 +1,11 @@
 {
   "name": "phosphor-command",
   "version": "0.1.0",
-  "description": "A module for expressing the command pattern",
+  "description": "A module for expressing the command pattern.",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "dependencies": {
-    "phosphor-signaling": "^1.1.1"
+    "phosphor-signaling": "^1.2.0"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
@@ -13,8 +13,8 @@
     "istanbul": "^0.3.19",
     "mocha": "^2.2.5",
     "rimraf": "^2.4.2",
-    "typedoc": "git://github.com/phosphorjs/typedoc.git",
-    "typescript": "1.6.0-beta"
+    "typedoc": "^0.3.12",
+    "typescript": "^1.6.2"
   },
   "scripts": {
     "clean": "rimraf lib && rimraf test/build && rimraf test/coverage",
@@ -31,8 +31,8 @@
     "url": "https://github.com/phosphorjs/phosphor-command.git"
   },
   "files": [
-    "lib/index.js",
-    "lib/index.d.ts"
+    "lib/*.d.ts",
+    "lib/*.js"
   ],
   "keywords": [
     "command",

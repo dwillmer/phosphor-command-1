@@ -285,26 +285,27 @@ class CommandRegistry {
     let filtered: ICommand[] = [];
     for (let cmd of commands) {
       if (cmd.id in this._commands) {
-        console.warn(`Command id '${cmd.id}' is already registered.`);
+        console.warn(`Command '${cmd.id}' is already registered.`);
       } else {
         filtered.push(cmd);
       }
     }
 
-    //
+    // If there are no new commands, there is nothing to do.
     if (filtered.length === 0) {
       return new DisposableDelegate(() => { });
     }
 
-    //
+    // Add the new commands to the registry.
     for (let cmd of filtered) {
       this._commands[cmd.id] = cmd;
     }
 
-    //
+    // Emit the `commandsAdded` signal with a copy of the array
+    // to protect the internal state from external modification.
     this.commandsAdded.emit(filtered.slice());
 
-    //
+    // Return a dispospable which will remove the the commands.
     return new DisposableDelegate(() => {
       for (let cmd of filtered) {
         delete this._commands[cmd.id];

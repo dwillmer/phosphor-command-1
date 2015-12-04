@@ -28,6 +28,14 @@ interface ICommand {
   canExecuteChanged: ISignal<ICommand, void>;
 
   /**
+   * A unique identifier for the command.
+   *
+   * #### Notes
+   * This is assumed to be a read-only constant property.
+   */
+  id: string;
+
+  /**
    * Test whether the command can execute in its current state.
    *
    * @param args - The proposed arguments for the command. These should
@@ -76,12 +84,15 @@ class DelegateCommand implements ICommand {
   /**
    * Construct a new delegate command.
    *
+   * @param id - The identifier for the command.
+   *
    * @param execute - The function which executes the command logic.
    *
    * @param canExecute - An optional function which determines whether
    *   the command can execute in its current state.
    */
-  constructor(execute: (args: any) => void, canExecute?: (args: any) => boolean) {
+  constructor(id: string, execute: (args: any) => void, canExecute?: (args: any) => boolean) {
+    this._id = id;
     this._execute = execute;
     this._canExecute = canExecute || null;
   }
@@ -97,6 +108,16 @@ class DelegateCommand implements ICommand {
    */
   get canExecuteChanged(): ISignal<DelegateCommand, void> {
     return DelegateCommand.canExecuteChangedSignal.bind(this);
+  }
+
+  /**
+   * Get the identifier for the command.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get id(): string {
+    return this._id;
   }
 
   /**
@@ -157,6 +178,7 @@ class DelegateCommand implements ICommand {
     this._execute.call(void 0, args);
   }
 
+  private _id: string;
   private _enabled = true;
   private _execute: (args: any) => void;
   private _canExecute: (args: any) => boolean;

@@ -33,12 +33,12 @@ describe('phosphor-command', () => {
     describe('#constructor()', () => {
 
       it('should accept a delegate function', () => {
-        let cmd = new DelegateCommand(() => {});
+        let cmd = new DelegateCommand('test', () => {});
         expect(cmd instanceof DelegateCommand).to.be(true);
       });
 
       it('should accept an optional delegate test function', () => {
-        let cmd = new DelegateCommand(() => {}, () => false);
+        let cmd = new DelegateCommand('test', () => {}, () => false);
         expect(cmd instanceof DelegateCommand).to.be(true);
       });
 
@@ -47,7 +47,7 @@ describe('phosphor-command', () => {
     describe('#canExecuteChanged', () => {
 
       it('should be emitted when the enabled state changes', () => {
-        let cmd = new DelegateCommand(() => {});
+        let cmd = new DelegateCommand('test', () => {});
         let count = 0;
         cmd.canExecuteChanged.connect(() => { count++ });
         expect(count).to.be(0);
@@ -61,10 +61,24 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#id', () => {
+
+      it('should return the command id', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        expect(cmd.id).to.be('test');
+      });
+
+      it('should be read only', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        expect(() => { cmd.id = 'foo' }).to.throwException();
+      });
+
+    });
+
     describe('#enabled', () => {
 
       it('should get and set the enabled state', () => {
-        let cmd = new DelegateCommand(() => {});
+        let cmd = new DelegateCommand('test', () => {});
         expect(cmd.enabled).to.be(true);
         cmd.enabled = false;
         expect(cmd.enabled).to.be(false);
@@ -75,7 +89,7 @@ describe('phosphor-command', () => {
     describe('#canExecute()', () => {
 
       it('should reflect the enabled state', () => {
-        let cmd = new DelegateCommand(() => {});
+        let cmd = new DelegateCommand('test', () => {});
         expect(cmd.canExecute(null)).to.be(true);
         cmd.enabled = false;
         expect(cmd.canExecute(null)).to.be(false);
@@ -85,7 +99,7 @@ describe('phosphor-command', () => {
         let args: any = null;
         let called = false;
         let func = (a: any) => { called = true; args = a; return false; };
-        let cmd = new DelegateCommand(() => {}, func);
+        let cmd = new DelegateCommand('test', () => {}, func);
         let args1 = {};
         expect(cmd.canExecute(args1)).to.be(false);
         expect(called).to.be(true);
@@ -95,7 +109,7 @@ describe('phosphor-command', () => {
       it('should not invoke the delegate function when disabled', () => {
         let called = false;
         let func = () => { called = true; return true; };
-        let cmd = new DelegateCommand(() => {}, func);
+        let cmd = new DelegateCommand('test', () => {}, func);
         cmd.enabled = false;
         expect(cmd.canExecute(null)).to.be(false);
         expect(called).to.be(false);
@@ -109,7 +123,7 @@ describe('phosphor-command', () => {
         let args: any = null;
         let called = false;
         let func = (a: any) => { called = true; args = a; };
-        let cmd = new DelegateCommand(func);
+        let cmd = new DelegateCommand('test', func);
         let args1 = {};
         cmd.execute(args1);
         expect(called).to.be(true);

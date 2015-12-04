@@ -281,32 +281,32 @@ class CommandRegistry {
    * while the command is registered will result in undefined behavior.
    */
   add(commands: ICommand[]): IDisposable {
-    // Register the commands and filter for duplicate command ids.
-    let filtered: ICommand[] = [];
+    // Register the commands and warn for duplicate command ids.
+    let added: ICommand[] = [];
     for (let cmd of commands) {
       if (cmd.id in this._commands) {
         console.warn(`Command '${cmd.id}' is already registered.`);
       } else {
-        filtered.push(cmd);
+        added.push(cmd);
         this._commands[cmd.id] = cmd;
       }
     }
 
     // If there are no new commands, there is nothing to do.
-    if (filtered.length === 0) {
+    if (added.length === 0) {
       return new DisposableDelegate(() => { });
     }
 
     // Emit the `commandsAdded` signal with a copy of the array
     // to protect the internal state from external modification.
-    this.commandsAdded.emit(filtered.slice());
+    this.commandsAdded.emit(added.slice());
 
     // Return a dispospable which will remove the the commands.
     return new DisposableDelegate(() => {
-      for (let cmd of filtered) {
+      for (let cmd of added) {
         delete this._commands[cmd.id];
       }
-      this.commandsRemoved.emit(filtered.slice());
+      this.commandsRemoved.emit(added.slice());
     });
   }
 

@@ -271,7 +271,7 @@ class CommandRegistry {
    *
    * @param commands - The commands to add to the registry.
    *
-   * @returns A disposable which will unregister the commands.
+   * @returns A disposable which will remove the added commands.
    *
    * #### Notes
    * If the `id` for a command is already registered, a warning will be

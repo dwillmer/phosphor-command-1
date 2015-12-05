@@ -14,49 +14,43 @@ import {
 } from 'phosphor-signaling';
 
 import {
-  CommandRegistry, DelegateCommand, ICommand
+  Command, CommandRegistry, DelegateCommand, ICommand
 } from '../../lib/index';
+
+
+class TestCommand extends Command {
+
+  execute(args: any): void { }
+}
 
 
 describe('phosphor-command', () => {
 
-  describe('DelegateCommand', () => {
+  describe('Command', () => {
 
     describe('.canExecuteChangedSignal', () => {
 
       it('should be a signal', () => {
-        expect(DelegateCommand.canExecuteChangedSignal instanceof Signal).to.be(true);
+        expect(Command.changedSignal instanceof Signal).to.be(true);
       });
 
     });
 
     describe('#constructor()', () => {
 
-      it('should accept a delegate function', () => {
-        let cmd = new DelegateCommand('test', () => {});
-        expect(cmd instanceof DelegateCommand).to.be(true);
-      });
-
-      it('should accept an optional delegate test function', () => {
-        let cmd = new DelegateCommand('test', () => {}, () => false);
-        expect(cmd instanceof DelegateCommand).to.be(true);
+      it('should accept an id', () => {
+        let cmd = new TestCommand('test');
+        expect(cmd instanceof Command).to.be(true);
       });
 
     });
 
-    describe('#canExecuteChanged', () => {
+    describe('#changed', () => {
 
-      it('should be emitted when the enabled state changes', () => {
-        let cmd = new DelegateCommand('test', () => {});
-        let count = 0;
-        cmd.canExecuteChanged.connect(() => { count++ });
-        expect(count).to.be(0);
-        cmd.enabled = false;
-        expect(count).to.be(1);
-        cmd.enabled = true;
-        expect(count).to.be(2);
-        cmd.enabled = true;
-        expect(count).to.be(2);
+      it('should be a pure delegate to the `changedSignal`', () => {
+        let cmd = new TestCommand('test');
+        let other = Command.changedSignal.bind(cmd);
+        expect(cmd.changed).to.eql(other);
       });
 
     });
@@ -64,13 +58,44 @@ describe('phosphor-command', () => {
     describe('#id', () => {
 
       it('should return the command id', () => {
-        let cmd = new DelegateCommand('test', () => {});
+        let cmd = new TestCommand('test');
         expect(cmd.id).to.be('test');
       });
 
       it('should be read only', () => {
-        let cmd = new DelegateCommand('test', () => {});
+        let cmd = new TestCommand('test');
         expect(() => { cmd.id = 'foo' }).to.throwException();
+      });
+
+    });
+
+    describe('#isEnabled()', () => {
+
+      it('should be `true` by default', () => {
+        let cmd = new TestCommand('test');
+        expect(cmd.isEnabled()).to.be(true);
+      });
+
+    });
+
+    describe('isChecked()', () => {
+
+      it('should be `false` by default', () => {
+        let cmd = new TestCommand('test');
+        expect(cmd.isChecked()).to.be(false);
+      });
+
+    });
+
+  });
+
+  describe('DelegateCommand', () => {
+
+    describe('#constructor()', () => {
+
+      it('should accept an id and delegate function', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        expect(cmd instanceof DelegateCommand).to.be(true);
       });
 
     });
@@ -84,35 +109,63 @@ describe('phosphor-command', () => {
         expect(cmd.enabled).to.be(false);
       });
 
+      it('should emit the `changed` signal', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        let count = 0;
+        cmd.changed.connect(() => { count++ });
+        expect(count).to.be(0);
+        cmd.enabled = false;
+        expect(count).to.be(1);
+        cmd.enabled = true;
+        expect(count).to.be(2);
+        cmd.enabled = true;
+        expect(count).to.be(2);
+      });
+
     });
 
-    describe('#canExecute()', () => {
+    describe('#checked', () => {
 
-      it('should reflect the enabled state', () => {
+      it('should get and set the checked state', () => {
         let cmd = new DelegateCommand('test', () => {});
-        expect(cmd.canExecute(null)).to.be(true);
-        cmd.enabled = false;
-        expect(cmd.canExecute(null)).to.be(false);
+        expect(cmd.checked).to.be(false);
+        cmd.checked = true;
+        expect(cmd.checked).to.be(true);
       });
 
-      it('should invoke the delegate function', () => {
-        let args: any = null;
-        let called = false;
-        let func = (a: any) => { called = true; args = a; return false; };
-        let cmd = new DelegateCommand('test', () => {}, func);
-        let args1 = {};
-        expect(cmd.canExecute(args1)).to.be(false);
-        expect(called).to.be(true);
-        expect(args).to.be(args1);
+      it('should emit the `changed` signal', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        let count = 0;
+        cmd.changed.connect(() => { count++ });
+        expect(count).to.be(0);
+        cmd.checked = true;
+        expect(count).to.be(1);
+        cmd.checked = false;
+        expect(count).to.be(2);
+        cmd.checked = false;
+        expect(count).to.be(2);
       });
 
-      it('should not invoke the delegate function when disabled', () => {
-        let called = false;
-        let func = () => { called = true; return true; };
-        let cmd = new DelegateCommand('test', () => {}, func);
+    });
+
+    describe('#isEnabled()', () => {
+
+      it('should reflect the `enabled` state', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        expect(cmd.isEnabled()).to.be(true);
         cmd.enabled = false;
-        expect(cmd.canExecute(null)).to.be(false);
-        expect(called).to.be(false);
+        expect(cmd.isEnabled()).to.be(false);
+      });
+
+    });
+
+    describe('#isChecked()', () => {
+
+      it('should reflect the `checked` state', () => {
+        let cmd = new DelegateCommand('test', () => {});
+        expect(cmd.isChecked()).to.be(false);
+        cmd.checked = true;
+        expect(cmd.isChecked()).to.be(true);
       });
 
     });

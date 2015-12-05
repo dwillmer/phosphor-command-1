@@ -22,14 +22,13 @@ import {
 export
 interface ICommand {
   /**
-   * A signal emitted when the command's [[canExecute]] state changes.
+   * A signal emitted when the command's state changes.
    *
    * #### Notes
    * Consumers of the command can subscribe to this signal in order to
-   * know when to re-query for the current executable state and update
-   * their visual representations accordingly.
+   * update their visual representation of the command when it changes.
    */
-  canExecuteChanged: ISignal<ICommand, void>;
+  changed: ISignal<ICommand, void>;
 
   /**
    * A unique identifier for the command.
@@ -40,30 +39,36 @@ interface ICommand {
   id: string;
 
   /**
-   * Test whether the command can execute in its current state.
+   * Test whether the command is enabled.
    *
-   * @param args - The proposed arguments for the command. These should
-   *   be simple JSON types. If the command does not require arguments,
-   *   this may be `null`.
-   *
-   * @returns `true` if the command can execute with the given args,
-   *   `false` otherwise.
+   * @returns `true` if the command is enabled, `false` otherwise.
    *
    * #### Notes
-   * When the potential result of this method changes at runtime, the
-   * [[canExecuteChanged]] signal should be emitted.
+   * The [[changed]] signal should be emitted if the return value
+   * changes at runtime.
    */
-  canExecute(args: any): boolean;
+  isEnabled(): boolean;
+
+  /**
+   * Test whether the command is checked.
+   *
+   * @returns `true` if the command is checked, `false` otherwise.
+   *
+   * #### Notes
+   * The [[changed]] signal should be emitted if the return value
+   * changes at runtime.
+   */
+  isChecked(): boolean;
 
   /**
    * Execute the command with the specified arguments.
    *
-   * @param args - The arguments for the command. These should be
+   * @param args - The arguments for the command. The args should be
    *   simple JSON types. If the command does not require arguments,
    *   this may be `null`.
    *
    * #### Notes
-   * Calling `execute` when `canExecute` returns `false` will result
+   * Calling `execute` when `isEnabled` returns `false` will result
    * in undefined behavior.
    */
   execute(args: any): void;
@@ -71,57 +76,115 @@ interface ICommand {
 
 
 /**
- * A concrete implementation of [[ICommand]].
- *
- * A `DelegateCommand` wraps a pair of functions to facilitate the easy
- * creation of commands without requiring subclassing or boilerplate.
+ * An abstract base class for implementing concrete commands.
  */
 export
-class DelegateCommand implements ICommand {
+abstract class Command implements ICommand {
   /**
-   * A signal emitted when the command's [[canExecute]] state changes.
+   * A signal emitted when the command's state changes.
    *
-   * **See also:** [[canExecuteChanged]]
+   * **See also:** [[changed]]
    */
-  static canExecuteChangedSignal = new Signal<DelegateCommand, void>();
+  static changedSignal = new Signal<Command, void>();
 
   /**
-   * Construct a new delegate command.
+   * Construct a new command.
    *
    * @param id - The identifier for the command.
-   *
-   * @param execute - The function which executes the command logic.
-   *
-   * @param canExecute - An optional function which determines whether
-   *   the command can execute in its current state.
    */
-  constructor(id: string, execute: (args: any) => void, canExecute?: (args: any) => boolean) {
+  constructor(id: string) {
     this._id = id;
-    this._execute = execute;
-    this._canExecute = canExecute || null;
   }
 
   /**
-   * A signal emitted when the command's [[canExecute]] state changes.
+   * A signal emitted when the command's state changes.
    *
    * #### Notes
-   * This is emitted automatically when the [[enabled]] state changes.
+   * This should be emitted by a subclass as necessary.
    *
-   * This can be emitted manually by the creator of the command when
-   * the result of the `canExecute` delegate function changes.
+   * This is a pure delegate to the [[changedSignal]].
    */
-  get canExecuteChanged(): ISignal<DelegateCommand, void> {
-    return DelegateCommand.canExecuteChangedSignal.bind(this);
+  get changed(): ISignal<Command, void> {
+    return Command.changedSignal.bind(this);
   }
 
   /**
    * Get the identifier for the command.
    *
    * #### Notes
-   * This is a read-only property.
+   * This is a read-only constant property.
    */
   get id(): string {
     return this._id;
+  }
+
+  /**
+   * Test whether the command is enabled.
+   *
+   * @returns `true` if the command is enabled, `false` otherwise.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * The default implementation of this method returns `true`.
+   */
+  isEnabled(): boolean {
+    return true;
+  }
+
+  /**
+   * Test whether the command is checked.
+   *
+   * @returns `true` if the command is checked, `false` otherwise.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * The default implementation of this method returns `false`.
+   */
+  isChecked(): boolean {
+    return false;
+  }
+
+  /**
+   * Execute the command with the specified arguments.
+   *
+   * @param args - The arguments for the command. The args should be
+   *   simple JSON types. If the command does not require arguments,
+   *   this may be `null`.
+   *
+   * #### Notes
+   * Calling `execute` when `isEnabled` returns `false` will result
+   * in undefined behavior.
+   *
+   * This abstract method must be implemented by a subclass.
+   */
+  abstract execute(args: any): void;
+
+  private _id: string;
+}
+
+
+/**
+ * A concrete implementation of [[ICommand]].
+ *
+ * A `DelegateCommand` wraps a function to facilitate the creation of
+ * simple commands without requiring subclassing or extra boilerplate.
+ */
+export
+class DelegateCommand extends Command {
+  /**
+   * Construct a new delegate command.
+   *
+   * @param id - The identifier for the command.
+   *
+   * @param execute - The function which executes the command logic.
+   */
+  constructor(id: string, execute: (args: any) => void) {
+    super(id);
+    this._execute = execute;
   }
 
   /**
@@ -135,57 +198,79 @@ class DelegateCommand implements ICommand {
    * Set the enabled state of the delegate command.
    *
    * #### Notes
-   * This will emit the [[canExecuteChanged]] if the state changes.
+   * This will emit the [[changed]] signal if the state changes.
    */
   set enabled(value: boolean) {
     if (this._enabled === value) {
       return;
     }
     this._enabled = value;
-    this.canExecuteChanged.emit(void 0);
+    this.changed.emit(void 0);
   }
 
   /**
-   * Test whether the command can execute in its current state.
-   *
-   * @param args - The proposed arguments for the command. These should
-   *   be simple JSON types. If the command does not require arguments,
-   *   this may be `null`.
-   *
-   * @returns `true` if the command can execute with the given args,
-   *   `false` otherwise.
+   * Get the checked state of the delegate command.
+   */
+  get checked(): boolean {
+    return this._checked;
+  }
+
+  /**
+   * Set the checked state of the delegate command.
    *
    * #### Notes
-   * If the [[enabled]] flag is set to `false`, this method will always
-   * return `false`. If a `canExecute` function is provided, the result
-   * of that function will be returned. Otherwise, this returns `true`.
+   * This will emit the [[changed]] signal if the state changes.
    */
-  canExecute(args: any): boolean {
-    if (this._enabled && this._canExecute) {
-      return this._canExecute.call(void 0, args);
+  set checked(value: boolean) {
+    if (this._checked === value) {
+      return;
     }
+    this._checked = value;
+    this.changed.emit(void 0);
+  }
+
+  /**
+   * Test whether the command is enabled.
+   *
+   * @returns `true` if the command is enabled, `false` otherwise.
+   *
+   * #### Notes
+   * This returns the command's [[enabled]] state.
+   */
+  isEnabled(): boolean {
     return this._enabled;
+  }
+
+  /**
+   * Test whether the command is checked.
+   *
+   * @returns `true` if the command is checked, `false` otherwise.
+   *
+   * #### Notes
+   * This returns the command's [[checked]] state.
+   */
+  isChecked(): boolean {
+    return this._checked;
   }
 
   /**
    * Execute the command with the specified arguments.
    *
-   * @param args - The arguments for the command. These should be
+   * @param args - The arguments for the command. The args should be
    *   simple JSON types. If the command does not require arguments,
    *   this may be `null`.
    *
    * #### Notes
-   * Calling `execute` when `canExecute` returns `false` will result
+   * Calling `execute` when `isEnabled` returns `false` will result
    * in undefined behavior.
    */
   execute(args: any) {
     this._execute.call(void 0, args);
   }
 
-  private _id: string;
   private _enabled = true;
+  private _checked = false;
   private _execute: (args: any) => void;
-  private _canExecute: (args: any) => boolean;
 }
 
 

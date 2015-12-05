@@ -337,10 +337,19 @@ describe('phosphor-command', () => {
         let reg = new CommandRegistry();
         let a = new DelegateCommand('a', () => { });
         let b = new DelegateCommand('b', () => { });
-        let c = new DelegateCommand('b', () => { });
+        let c = new DelegateCommand('c', () => { });
+        let d = new DelegateCommand('a', () => { });
+        let e = new DelegateCommand('b', () => { });
+        let f = new DelegateCommand('c', () => { });
         reg.add([a, b, c]);
         expect(reg.get('a')).to.be(a);
         expect(reg.get('b')).to.be(b);
+        expect(reg.get('c')).to.be(c);
+        reg.add([d, e, f]);
+        expect(reg.get('a')).to.be(a);
+        expect(reg.get('b')).to.be(b);
+        expect(reg.get('c')).to.be(c);
+        expect(reg.list()).to.eql(['a', 'b', 'c']);
       });
 
       it('should return a disposable to remove commands', () => {

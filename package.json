@@ -1,6 +1,6 @@
 {
   "name": "phosphor-command",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A module for expressing the command pattern.",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

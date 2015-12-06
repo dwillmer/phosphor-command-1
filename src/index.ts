@@ -8,10 +8,6 @@
 'use strict';
 
 import {
-  DisposableDelegate, IDisposable
-} from 'phosphor-disposable';
-
-import {
   ISignal, Signal
 } from 'phosphor-signaling';
 
@@ -29,14 +25,6 @@ interface ICommand {
    * update their visual representation of the command when it changes.
    */
   changed: ISignal<ICommand, void>;
-
-  /**
-   * A unique identifier for the command.
-   *
-   * #### Notes
-   * This is assumed to be a read-only constant property.
-   */
-  id: string;
 
   /**
    * Test whether the command is enabled.
@@ -88,15 +76,6 @@ abstract class Command implements ICommand {
   static changedSignal = new Signal<Command, void>();
 
   /**
-   * Construct a new command.
-   *
-   * @param id - The identifier for the command.
-   */
-  constructor(id: string) {
-    this._id = id;
-  }
-
-  /**
    * A signal emitted when the command's state changes.
    *
    * #### Notes
@@ -106,16 +85,6 @@ abstract class Command implements ICommand {
    */
   get changed(): ISignal<Command, void> {
     return Command.changedSignal.bind(this);
-  }
-
-  /**
-   * Get the identifier for the command.
-   *
-   * #### Notes
-   * This is a read-only constant property.
-   */
-  get id(): string {
-    return this._id;
   }
 
   /**
@@ -162,8 +131,6 @@ abstract class Command implements ICommand {
    * This abstract method must be implemented by a subclass.
    */
   abstract execute(args: any): void;
-
-  private _id: string;
 }
 
 
@@ -178,12 +145,10 @@ class DelegateCommand extends Command {
   /**
    * Construct a new delegate command.
    *
-   * @param id - The identifier for the command.
-   *
    * @param execute - The function which executes the command logic.
    */
-  constructor(id: string, execute: (args: any) => void) {
-    super(id);
+  constructor(execute: (args: any) => void) {
+    super();
     this._execute = execute;
   }
 
@@ -271,130 +236,4 @@ class DelegateCommand extends Command {
   private _enabled = true;
   private _checked = false;
   private _execute: (args: any) => void;
-}
-
-
-/**
- * A simple command registry class.
- */
-export
-class CommandRegistry {
-  /**
-   * Get a singleton instance of `CommandRegistry`.
-   *
-   * This singleton is useful for applications where all (or most) of
-   * the commands should be centrally registered and accessible. This
-   * method will always return the same command registry instance.
-   */
-  static instance(): CommandRegistry {
-    return this._instance || (this._instance = new CommandRegistry());
-  }
-
-  /**
-   * A signal emitted when commands are added to the registry.
-   *
-   * **See also:** [[commandsAdded]]
-   */
-  static commandsAddedSignal = new Signal<CommandRegistry, ICommand[]>();
-
-  /**
-   * A signal emitted when commands are removed from the registry.
-   *
-   * **See also:** [[commandsAdded]]
-   */
-  static commandsRemovedSignal = new Signal<CommandRegistry, ICommand[]>();
-
-  /**
-   * Construct a new command registry.
-   */
-  constructor() {
-    this._commands = Object.create(null);
-  }
-
-  /**
-   * A signal emitted when commands are added to the registry.
-   *
-   * #### Notes
-   * This is a pure delegate to the [[commandsAddedSignal]].
-   */
-  get commandsAdded(): ISignal<CommandRegistry, ICommand[]> {
-    return CommandRegistry.commandsAddedSignal.bind(this);
-  }
-
-  /**
-   * A signal emitted when commands are removed from the registry.
-   *
-   * #### Notes
-   * This is a pure delegate to the [[commandsRemovedSignal]].
-   */
-  get commandsRemoved(): ISignal<CommandRegistry, ICommand[]> {
-    return CommandRegistry.commandsRemovedSignal.bind(this);
-  }
-
-  /**
-   * List the ids of the currently registered commands.
-   *
-   * @returns A new array of the current command ids.
-   */
-  list(): string[] {
-    return Object.keys(this._commands);
-  }
-
-  /**
-   * Get the command with the specified id.
-   *
-   * @param id - The id of the command of interest.
-   *
-   * @returns The command with the specified id, or `undefined`.
-   */
-  get(id: string): ICommand {
-    return this._commands[id];
-  }
-
-  /**
-   * Add commands to the registry.
-   *
-   * @param commands - The commands to add to the registry.
-   *
-   * @returns A disposable which will remove the added commands.
-   *
-   * #### Notes
-   * If the `id` for a command is already registered, a warning will be
-   * logged and that specific command will be ignored.
-   *
-   * The `id` of a command must be constant. Mutating the command `id`
-   * while the command is registered will result in undefined behavior.
-   */
-  add(commands: ICommand[]): IDisposable {
-    // Register the commands and warn for duplicate command ids.
-    let added: ICommand[] = [];
-    for (let cmd of commands) {
-      if (cmd.id in this._commands) {
-        console.warn(`Command '${cmd.id}' is already registered.`);
-      } else {
-        added.push(cmd);
-        this._commands[cmd.id] = cmd;
-      }
-    }
-
-    // If there are no new commands, there is nothing to do.
-    if (added.length === 0) {
-      return new DisposableDelegate(() => { });
-    }
-
-    // Emit the `commandsAdded` signal with a copy of the array
-    // to protect the internal state from external modification.
-    this.commandsAdded.emit(added.slice());
-
-    // Return a dispospable which will remove the the commands.
-    return new DisposableDelegate(() => {
-      for (let cmd of added) {
-        delete this._commands[cmd.id];
-      }
-      this.commandsRemoved.emit(added.slice());
-    });
-  }
-
-  private _commands: { [id: string]: ICommand };
-  private static _instance: CommandRegistry = null;
 }

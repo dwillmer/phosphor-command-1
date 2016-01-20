@@ -314,11 +314,11 @@ class SimpleCommand extends Command {
     if (options.icon !== void 0) {
       this._icon = options.icon;
     }
-    if (options.category !== void 0) {
-      this._category = options.category;
-    }
     if (options.caption !== void 0) {
       this._caption = options.caption;
+    }
+    if (options.category !== void 0) {
+      this._category = options.category;
     }
     if (options.className !== void 0) {
       this._className = options.className;

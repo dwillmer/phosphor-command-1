@@ -60,6 +60,15 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#category()', () => {
+
+      it('should be an empty string by default', () => {
+        let cmd = new TestCommand();
+        expect(cmd.category(null)).to.be('');
+      });
+
+    });
+
     describe('#className()', () => {
 
       it('should be an empty string by default', () => {
@@ -143,6 +152,18 @@ describe('phosphor-command', () => {
           caption: 'green eggs and ham',
         });
         expect(cmd.caption(null)).to.be('green eggs and ham');
+      });
+
+    });
+
+    describe('#category()', () => {
+
+      it('should reflect the command category', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+          category: 'Seuss',
+        });
+        expect(cmd.category(null)).to.be('Seuss');
       });
 
     });
@@ -286,6 +307,38 @@ describe('phosphor-command', () => {
         let called = false;
         cmd.changed.connect(() => { called = true; });
         cmd.setCaption('');
+        expect(called).to.be(false);
+      });
+
+    });
+
+    describe('#setCategory()', () => {
+
+      it('should set the command category', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        cmd.setCategory('Seuss');
+        expect(cmd.category(null)).to.be('Seuss');
+      });
+
+      it('should emit the changed signal if changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let called = false;
+        cmd.changed.connect(() => { called = true; });
+        cmd.setCategory('Seuss');
+        expect(called).to.be(true);
+      });
+
+      it('should not emit the changed signal if not changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let called = false;
+        cmd.changed.connect(() => { called = true; });
+        cmd.setCategory('');
         expect(called).to.be(false);
       });
 

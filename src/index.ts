@@ -93,6 +93,27 @@ abstract class Command {
   }
 
   /**
+   * Get the category for the command.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns The category for the command.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * This value is used by UI elements which group commands together
+   * based on category, such as toolbars and command palettes.
+   *
+   * The default implementation of this method returns an empty string.
+   */
+  category(args: any): string {
+    return '';
+  }
+
+  /**
    * Get the class name(s) for the primary command node.
    *
    * @param args - The arguments for the command. If the command does
@@ -220,6 +241,11 @@ interface ISimpleCommandOptions {
   caption?: string;
 
   /**
+   * The initial category for the command.
+   */
+  category?: string;
+
+  /**
    * The initial extra class name for the command.
    */
   className?: string;
@@ -266,6 +292,9 @@ class SimpleCommand extends Command {
     }
     if (options.icon !== void 0) {
       this._icon = options.icon;
+    }
+    if (options.category !== void 0) {
+      this._category = options.category;
     }
     if (options.caption !== void 0) {
       this._caption = options.caption;
@@ -319,23 +348,6 @@ class SimpleCommand extends Command {
   }
 
   /**
-   * Get the class name(s) for the primary command node.
-   *
-   * @param args - The arguments for the command. If the command does
-   *   not require arguments, this may be `null`.
-   *
-   * @returns The class name(s) to add to the primary command node.
-   *
-   * #### Notes
-   * This method ignores the command arguments.
-   *
-   * **See also** [[setClassName]]
-   */
-  className(args: any): string {
-    return this._className;
-  }
-
-  /**
    * Get the short caption for the command.
    *
    * @param args - The arguments for the command. If the command does
@@ -350,6 +362,40 @@ class SimpleCommand extends Command {
    */
   caption(args: any): string {
     return this._caption;
+  }
+
+  /**
+   * Get the category for the command.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns The category for the command.
+   *
+   * #### Notes
+   * This method ignores the command arguments.
+   *
+   * **See also** [[setCategory]]
+   */
+  category(args: any): string {
+    return this._category;
+  }
+
+  /**
+   * Get the class name(s) for the primary command node.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns The class name(s) to add to the primary command node.
+   *
+   * #### Notes
+   * This method ignores the command arguments.
+   *
+   * **See also** [[setClassName]]
+   */
+  className(args: any): string {
+    return this._className;
   }
 
   /**
@@ -452,6 +498,22 @@ class SimpleCommand extends Command {
   }
 
   /**
+   * Set the category for the command.
+   *
+   * @param value - The category for the command.
+   *
+   * #### Notes
+   * If the category changes, the [[changed]] signal will be emitted.
+   */
+  setCategory(value: string): void {
+    if (this._category === value) {
+      return;
+    }
+    this._category = value;
+    this.changed.emit(void 0);
+  }
+
+  /**
    * Set the class name for the command.
    *
    * @param value - The class name for the command.
@@ -532,6 +594,7 @@ class SimpleCommand extends Command {
   private _text = '';
   private _icon = '';
   private _caption = '';
+  private _category = '';
   private _className = '';
   private _enabled = true;
   private _visible = true;

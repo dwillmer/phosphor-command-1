@@ -556,7 +556,7 @@ function safeExecute(command: Command, args: any): void {
   try {
     command.execute(args);
   } catch (err) {
-    console.error(`Error in command '${command.text}':`, err);
+    console.error(err);
   }
 }
 

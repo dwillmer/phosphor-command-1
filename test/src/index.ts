@@ -51,20 +51,20 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#caption()', () => {
+
+      it('should be an empty string by default', () => {
+        let cmd = new TestCommand();
+        expect(cmd.caption(null)).to.be('');
+      });
+
+    });
+
     describe('#className()', () => {
 
       it('should be an empty string by default', () => {
         let cmd = new TestCommand();
         expect(cmd.className(null)).to.be('');
-      });
-
-    });
-
-    describe('#description()', () => {
-
-      it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
-        expect(cmd.description(null)).to.be('');
       });
 
     });
@@ -135,6 +135,18 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#caption()', () => {
+
+      it('should reflect the command caption', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+          caption: 'green eggs and ham',
+        });
+        expect(cmd.caption(null)).to.be('green eggs and ham');
+      });
+
+    });
+
     describe('#className()', () => {
 
       it('should reflect the command class name', () => {
@@ -143,18 +155,6 @@ describe('phosphor-command', () => {
           className: 'blue',
         });
         expect(cmd.className(null)).to.be('blue');
-      });
-
-    });
-
-    describe('#description()', () => {
-
-      it('should reflect the command description', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          description: 'green eggs and ham',
-        });
-        expect(cmd.description(null)).to.be('green eggs and ham');
       });
 
     });
@@ -259,6 +259,38 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#setCaption()', () => {
+
+      it('should set the command caption', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        cmd.setCaption('green eggs and ham');
+        expect(cmd.caption(null)).to.be('green eggs and ham');
+      });
+
+      it('should emit the changed signal if changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let called = false;
+        cmd.changed.connect(() => { called = true; });
+        cmd.setCaption('green eggs and ham');
+        expect(called).to.be(true);
+      });
+
+      it('should not emit the changed signal if not changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let called = false;
+        cmd.changed.connect(() => { called = true; });
+        cmd.setCaption('');
+        expect(called).to.be(false);
+      });
+
+    });
+
     describe('#setClassName()', () => {
 
       it('should set the command class name', () => {
@@ -286,38 +318,6 @@ describe('phosphor-command', () => {
         let called = false;
         cmd.changed.connect(() => { called = true; });
         cmd.setClassName('');
-        expect(called).to.be(false);
-      });
-
-    });
-
-    describe('#setDescription()', () => {
-
-      it('should set the command description', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        cmd.setDescription('green eggs and ham');
-        expect(cmd.description(null)).to.be('green eggs and ham');
-      });
-
-      it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
-        cmd.setDescription('green eggs and ham');
-        expect(called).to.be(true);
-      });
-
-      it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
-        cmd.setDescription('');
         expect(called).to.be(false);
       });
 

@@ -72,6 +72,27 @@ abstract class Command {
   }
 
   /**
+   * Get the short caption for the command.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns The short caption for the command.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * This value is used by UI elements where displaying a short command
+   * description is relevant, such as tooltips and command palettes.
+   *
+   * The default implementation of this method returns an empty string.
+   */
+  caption(args: any): string {
+    return '';
+  }
+
+  /**
    * Get the class name(s) for the primary command node.
    *
    * @param args - The arguments for the command. If the command does
@@ -91,27 +112,6 @@ abstract class Command {
    * The default implementation of this method returns an empty string.
    */
   className(args: any): string {
-    return '';
-  }
-
-  /**
-   * Get the long form (one line) description for the command.
-   *
-   * @param args - The arguments for the command. If the command does
-   *   not require arguments, this may be `null`.
-   *
-   * @returns The long form description for the command.
-   *
-   * #### Notes
-   * A subclass may reimplement this method as needed. If the state
-   * changes at runtime, the [[changed]] signal should be emitted.
-   *
-   * This value is used by UI elements where displaying a command
-   * description is relevant, such as tooltips and command palettes.
-   *
-   * The default implementation of this method returns an empty string.
-   */
-  description(args: any): string {
     return '';
   }
 
@@ -215,14 +215,14 @@ interface ISimpleCommandOptions {
   icon?: string;
 
   /**
+   * The initial short caption for the command.
+   */
+  caption?: string;
+
+  /**
    * The initial extra class name for the command.
    */
   className?: string;
-
-  /**
-   * The initial long form description of the command.
-   */
-  description?: string;
 
   /**
    * The initial enabled state of the command.
@@ -267,11 +267,11 @@ class SimpleCommand extends Command {
     if (options.icon !== void 0) {
       this._icon = options.icon;
     }
+    if (options.caption !== void 0) {
+      this._caption = options.caption;
+    }
     if (options.className !== void 0) {
       this._className = options.className;
-    }
-    if (options.description !== void 0) {
-      this._description = options.description;
     }
     if (options.enabled !== void 0) {
       this._enabled = options.enabled;
@@ -336,20 +336,20 @@ class SimpleCommand extends Command {
   }
 
   /**
-   * Get the long form (one line) description for the command.
+   * Get the short caption for the command.
    *
    * @param args - The arguments for the command. If the command does
    *   not require arguments, this may be `null`.
    *
-   * @returns The long form description for the command.
+   * @returns The short caption for the command.
    *
    * #### Notes
    * This method ignores the command arguments.
    *
-   * **See also** [[setDescription]]
+   * **See also** [[setCaption]]
    */
-  description(args: any): string {
-    return this._description;
+  caption(args: any): string {
+    return this._caption;
   }
 
   /**
@@ -436,6 +436,22 @@ class SimpleCommand extends Command {
   }
 
   /**
+   * Set the caption for the command.
+   *
+   * @param value - The caption for the command.
+   *
+   * #### Notes
+   * If the caption changes, the [[changed]] signal will be emitted.
+   */
+  setCaption(value: string): void {
+    if (this._caption === value) {
+      return;
+    }
+    this._caption = value;
+    this.changed.emit(void 0);
+  }
+
+  /**
    * Set the class name for the command.
    *
    * @param value - The class name for the command.
@@ -448,22 +464,6 @@ class SimpleCommand extends Command {
       return;
     }
     this._className = value;
-    this.changed.emit(void 0);
-  }
-
-  /**
-   * Set the description for the command.
-   *
-   * @param value - The description for the command.
-   *
-   * #### Notes
-   * If the description changes, the [[changed]] signal will be emitted.
-   */
-  setDescription(value: string): void {
-    if (this._description === value) {
-      return;
-    }
-    this._description = value;
     this.changed.emit(void 0);
   }
 
@@ -531,8 +531,8 @@ class SimpleCommand extends Command {
 
   private _text = '';
   private _icon = '';
+  private _caption = '';
   private _className = '';
-  private _description = '';
   private _enabled = true;
   private _visible = true;
   private _checked = false;

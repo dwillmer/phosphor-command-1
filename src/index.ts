@@ -18,6 +18,20 @@ import {
 export
 abstract class Command {
   /**
+   * Execute the command with the specified arguments.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * #### Notes
+   * Calling `execute` when `isEnabled` returns `false` may result in
+   * undefined behavior.
+   *
+   * This abstract method must be implemented by a subclass.
+   */
+  abstract execute(args: any): void;
+
+  /**
    * A signal emitted when the command's state changes.
    *
    * #### Notes
@@ -198,20 +212,27 @@ abstract class Command {
   isChecked(args: any): boolean {
     return false;
   }
+}
 
-  /**
-   * Execute the command with the specified arguments.
-   *
-   * @param args - The arguments for the command. If the command does
-   *   not require arguments, this may be `null`.
-   *
-   * #### Notes
-   * Calling `execute` when `isEnabled` returns `false` may result in
-   * undefined behavior.
-   *
-   * This abstract method must be implemented by a subclass.
-   */
-  abstract execute(args: any): void;
+
+/**
+ * Safely execute a command.
+ *
+ * @param command - The command to execute.
+ *
+ * @param args - The arguments for the command. If the command does
+ *   not require arguments, this may be `null`.
+ *
+ * #### Notes
+ * If the commmand throws an exception, it will be caught and logged.
+ */
+export
+function safeExecute(command: Command, args: any): void {
+  try {
+    command.execute(args);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 
@@ -600,27 +621,6 @@ class SimpleCommand extends Command {
   private _visible = true;
   private _checked = false;
   private _handler: (args: any) => void;
-}
-
-
-/**
- * Safely execute a command.
- *
- * @param command - The command to execute.
- *
- * @param args - The arguments for the command. If the command does
- *   not require arguments, this may be `null`.
- *
- * #### Notes
- * If the commmand throws an exception, it will be caught and logged.
- */
-export
-function safeExecute(command: Command, args: any): void {
-  try {
-    command.execute(args);
-  } catch (err) {
-    console.error(err);
-  }
 }
 
 

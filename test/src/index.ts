@@ -87,15 +87,6 @@ describe('phosphor-command', () => {
 
     });
 
-    describe('#isVisible()', () => {
-
-      it('should be `true` by default', () => {
-        let cmd = new TestCommand();
-        expect(cmd.isVisible(null)).to.be(true);
-      });
-
-    });
-
     describe('isChecked()', () => {
 
       it('should be `false` by default', () => {
@@ -188,18 +179,6 @@ describe('phosphor-command', () => {
           enabled: false,
         });
         expect(cmd.isEnabled(null)).to.be(false);
-      });
-
-    });
-
-    describe('#isVisible()', () => {
-
-      it('should reflect the command visible state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          visible: false,
-        });
-        expect(cmd.isVisible(null)).to.be(false);
       });
 
     });
@@ -403,38 +382,6 @@ describe('phosphor-command', () => {
         let called = false;
         cmd.changed.connect(() => { called = true; });
         cmd.setEnabled(true);
-        expect(called).to.be(false);
-      });
-
-    });
-
-    describe('#setVisible()', () => {
-
-      it('should set the command visible state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        cmd.setVisible(false);
-        expect(cmd.isVisible(null)).to.be(false);
-      });
-
-      it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
-        cmd.setVisible(false);
-        expect(called).to.be(true);
-      });
-
-      it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
-        cmd.setVisible(true);
         expect(called).to.be(false);
       });
 

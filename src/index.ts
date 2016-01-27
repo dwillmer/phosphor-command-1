@@ -618,6 +618,7 @@ class SimpleCommand extends Command {
   private _category = '';
   private _className = '';
   private _enabled = true;
+  private _visible = true;
   private _checked = false;
   private _handler: (args: any) => void;
 }

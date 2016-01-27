@@ -24,32 +24,6 @@ describe('phosphor-command', () => {
 
   describe('Command', () => {
 
-    describe('.safeExecute()', () => {
-
-      it('should execute the command', () => {
-        let args: any = null;
-        let called = false;
-        let func = (a: any) => { called = true; args = a; };
-        let cmd = new SimpleCommand({ handler: func });
-        let args1 = {};
-        Command.safeExecute(cmd, args1);
-        expect(called).to.be(true);
-        expect(args).to.be(args1);
-      });
-
-      it('should not propagate exceptions', () => {
-        let args: any = null;
-        let called = false;
-        let func = (a: any) => { throw new Error('test'); };
-        let cmd = new SimpleCommand({ handler: func });
-        let args1 = {};
-        Command.safeExecute(cmd, args1);
-        expect(called).to.be(false);
-        expect(args).to.be(null);
-      });
-
-    });
-
     describe('#constructor()', () => {
 
       it('should create a new command', () => {

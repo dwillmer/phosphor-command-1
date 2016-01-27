@@ -27,7 +27,8 @@ abstract class Command {
    * Calling `execute` when `isEnabled` returns `false` may result in
    * undefined behavior.
    *
-   * This abstract method must be implemented by a subclass.
+   * This abstract method must be implemented by a subclass, and the
+   * implementation **must not** throw an exception.
    */
   abstract execute(args: any): void;
 
@@ -222,26 +223,6 @@ namespace Command {
    */
   export
   const changed = (new Signal<typeof Command, Command>()).bind(Command);
-
-  /**
-   * Safely execute a command.
-   *
-   * @param command - The command to execute.
-   *
-   * @param args - The arguments for the command. If the command does
-   *   not require arguments, this may be `null`.
-   *
-   * #### Notes
-   * If the commmand throws an exception, it will be caught and logged.
-   */
-  export
-  function safeExecute(command: Command, args: any): void {
-    try {
-      command.execute(args);
-    } catch (err) {
-      console.error(err);
-    }
-  }
 }
 
 
@@ -618,7 +599,11 @@ class SimpleCommand extends Command {
    * undefined behavior.
    */
   execute(args: any) {
-    this._handler.call(void 0, args);
+    try {
+      this._handler.call(void 0, args);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   private _text = '';

@@ -32,16 +32,6 @@ abstract class Command {
   abstract execute(args: any): void;
 
   /**
-   * A signal emitted when the command's state changes.
-   *
-   * #### Notes
-   * A subclass should emit this signal when the command state changes.
-   */
-  get changed(): ISignal<Command, void> {
-    return CommandPrivate.changedSignal.bind(this);
-  }
-
-  /**
    * Get the display text for the command.
    *
    * @param args - The arguments for the command. If the command does
@@ -216,22 +206,41 @@ abstract class Command {
 
 
 /**
- * Safely execute a command.
- *
- * @param command - The command to execute.
- *
- * @param args - The arguments for the command. If the command does
- *   not require arguments, this may be `null`.
- *
- * #### Notes
- * If the commmand throws an exception, it will be caught and logged.
+ * The namespace for the `Command` class statics.
  */
 export
-function safeExecute(command: Command, args: any): void {
-  try {
-    command.execute(args);
-  } catch (err) {
-    console.error(err);
+namespace Command {
+  /**
+   * A signal emitted when a command's state changes.
+   *
+   * #### Notes
+   * A command should emit this signal when its state changes.
+   *
+   * This is a static signal which passes the changed command as the
+   * argument for the signal. This reduces the number of connections
+   * in an application from potentially hundreds, to just a few.
+   */
+  export
+  const changed = (new Signal<typeof Command, Command>()).bind(Command);
+
+  /**
+   * Safely execute a command.
+   *
+   * @param command - The command to execute.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * #### Notes
+   * If the commmand throws an exception, it will be caught and logged.
+   */
+  export
+  function safeExecute(command: Command, args: any): void {
+    try {
+      command.execute(args);
+    } catch (err) {
+      console.error(err);
+    }
   }
 }
 
@@ -483,7 +492,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._text = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -499,7 +508,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._icon = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -515,7 +524,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._caption = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -531,7 +540,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._category = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -547,7 +556,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._className = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -563,7 +572,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._enabled = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -579,7 +588,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._visible = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -595,7 +604,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._checked = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**

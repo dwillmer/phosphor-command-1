@@ -172,6 +172,27 @@ abstract class Command {
   }
 
   /**
+   * Test whether the command is visible for its current state.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns `true` if the command is visible, `false` otherwise.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * UI elements which have a visual representation of a command will
+   * typically not display a non-visible command.
+   *
+   * The default implementation of this method returns `true`.
+   */
+  isVisible(args: any): boolean {
+    return true;
+  }
+
+  /**
    * Test whether the command is checked for its current state.
    *
    * @param args - The arguments for the command. If the command does
@@ -256,6 +277,11 @@ interface ISimpleCommandOptions {
   enabled?: boolean;
 
   /**
+   * The initial visible state of the command.
+   */
+  visible?: boolean;
+
+  /**
    * The initial checked state of the command.
    */
   checked?: boolean;
@@ -299,6 +325,9 @@ class SimpleCommand extends Command {
     }
     if (options.enabled !== void 0) {
       this._enabled = options.enabled;
+    }
+    if (options.visible !== void 0) {
+      this._visible = options.visible;
     }
     if (options.checked !== void 0) {
       this._checked = options.checked;
@@ -405,6 +434,23 @@ class SimpleCommand extends Command {
    */
   isEnabled(args: any): boolean {
     return this._enabled;
+  }
+
+  /**
+   * Test whether the command is visible for its current state.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns `true` if the command is visible, `false` otherwise.
+   *
+   * #### Notes
+   * This method ignores the command arguments.
+   *
+   * **See also** [[setVisible]]
+   */
+  isVisible(args: any): boolean {
+    return this._visible;
   }
 
   /**
@@ -517,6 +563,22 @@ class SimpleCommand extends Command {
       return;
     }
     this._enabled = value;
+    this.changed.emit(void 0);
+  }
+
+  /**
+   * Set the visible state for the command.
+   *
+   * @param value - The visible state for the command.
+   *
+   * #### Notes
+   * If the state changes, the [[changed]] signal will be emitted.
+   */
+  setVisible(value: boolean): void {
+    if (this._visible === value) {
+      return;
+    }
+    this._visible = value;
     this.changed.emit(void 0);
   }
 

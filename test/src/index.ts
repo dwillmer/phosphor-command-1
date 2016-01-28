@@ -10,7 +10,7 @@
 import expect = require('expect.js');
 
 import {
-  Command, SimpleCommand
+  Command, SimpleCommand, CommandItem, ICommandItemOptions
 } from '../../lib/index';
 
 
@@ -485,6 +485,47 @@ describe('phosphor-command', () => {
         expect(args).to.be(args1);
       });
 
+      it('should not propagate handler error', () => {
+        let args: any = null;
+        let called = false;
+        let func = (a: any) => { called = true; throw "Should not propagate"; };
+        let cmd = new SimpleCommand({ handler: func });
+        cmd.execute(args);
+        expect(called).to.be(true);
+      });
+
+    });
+
+    describe('#CommandItem', () => {
+
+      it('should accept an options object', () => {
+        let called = false;
+        let args = 1;
+        let count = 0;
+        let func = (a: any) => { called = true; count = a; }
+        let cmd = new SimpleCommand({ handler: func });
+        let options = {
+          command: cmd,
+          args: args
+        } as ICommandItemOptions;
+
+        let cmdItem = new CommandItem(options);
+
+        expect(cmdItem.shortcut).to.be('');
+        expect(cmdItem.text).to.be('');
+        expect(cmdItem.icon).to.be('');
+        expect(cmdItem.caption).to.be('');
+        expect(cmdItem.category).to.be('');
+        expect(cmdItem.command).to.be(cmd);
+        expect(cmdItem.args).to.be(args);
+        expect(cmdItem.className).to.be('');
+        expect(cmdItem.isEnabled).to.be(true);
+        expect(cmdItem.isVisible).to.be(true);
+        expect(cmdItem.isChecked).to.be(false);
+        expect(count).to.be(0);
+        cmdItem.execute();
+        expect(count).to.be(1);
+      });
     });
 
   });

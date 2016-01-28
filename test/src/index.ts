@@ -10,7 +10,7 @@
 import expect = require('expect.js');
 
 import {
-  Command, SimpleCommand, safeExecute
+  Command, SimpleCommand
 } from '../../lib/index';
 
 
@@ -83,6 +83,15 @@ describe('phosphor-command', () => {
       it('should be `true` by default', () => {
         let cmd = new TestCommand();
         expect(cmd.isEnabled(null)).to.be(true);
+      });
+
+    });
+
+    describe('#isVisible()', () => {
+
+      it('should be `true` by default', () => {
+        let cmd = new TestCommand();
+        expect(cmd.isVisible(null)).to.be(true);
       });
 
     });
@@ -183,6 +192,18 @@ describe('phosphor-command', () => {
 
     });
 
+    describe('#isVisible()', () => {
+
+      it('should reflect the command visible state', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+          visible: false,
+        });
+        expect(cmd.isVisible(null)).to.be(false);
+      });
+
+    });
+
     describe('isChecked()', () => {
 
       it('should reflect the command checked state', () => {
@@ -209,20 +230,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setText('foo');
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setText('');
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -241,20 +262,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setIcon('fa fa-close');
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setIcon('');
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -273,20 +294,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCaption('green eggs and ham');
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCaption('');
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -305,20 +326,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCategory('Seuss');
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCategory('');
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -337,20 +358,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setClassName('blue');
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setClassName('');
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -369,20 +390,52 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setEnabled(false);
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setEnabled(true);
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
+      });
+
+    });
+
+    describe('#setVisible()', () => {
+
+      it('should set the command visible state', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        cmd.setVisible(false);
+        expect(cmd.isVisible(null)).to.be(false);
+      });
+
+      it('should emit the changed signal if changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
+        cmd.setVisible(false);
+        expect(tgt).to.be(cmd);
+      });
+
+      it('should not emit the changed signal if not changed', () => {
+        let cmd = new SimpleCommand({
+          handler: () => { },
+        });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
+        cmd.setVisible(true);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -401,20 +454,20 @@ describe('phosphor-command', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setChecked(true);
-        expect(called).to.be(true);
+        expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
         let cmd = new SimpleCommand({
           handler: () => { },
         });
-        let called = false;
-        cmd.changed.connect(() => { called = true; });
+        let tgt: Command = null;
+        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setChecked(false);
-        expect(called).to.be(false);
+        expect(tgt).to.be(null);
       });
 
     });
@@ -432,32 +485,6 @@ describe('phosphor-command', () => {
         expect(args).to.be(args1);
       });
 
-    });
-
-  });
-
-  describe('safeExecute()', () => {
-
-    it('should execute the command', () => {
-      let args: any = null;
-      let called = false;
-      let func = (a: any) => { called = true; args = a; };
-      let cmd = new SimpleCommand({ handler: func });
-      let args1 = {};
-      safeExecute(cmd, args1);
-      expect(called).to.be(true);
-      expect(args).to.be(args1);
-    });
-
-    it('should not propagate exceptions', () => {
-      let args: any = null;
-      let called = false;
-      let func = (a: any) => { throw new Error('test'); };
-      let cmd = new SimpleCommand({ handler: func });
-      let args1 = {};
-      safeExecute(cmd, args1);
-      expect(called).to.be(false);
-      expect(args).to.be(null);
     });
 
   });

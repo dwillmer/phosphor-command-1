@@ -27,19 +27,10 @@ abstract class Command {
    * Calling `execute` when `isEnabled` returns `false` may result in
    * undefined behavior.
    *
-   * This abstract method must be implemented by a subclass.
+   * This abstract method must be implemented by a subclass, and the
+   * implementation **must not** throw an exception.
    */
   abstract execute(args: any): void;
-
-  /**
-   * A signal emitted when the command's state changes.
-   *
-   * #### Notes
-   * A subclass should emit this signal when the command state changes.
-   */
-  get changed(): ISignal<Command, void> {
-    return CommandPrivate.changedSignal.bind(this);
-  }
 
   /**
    * Get the display text for the command.
@@ -172,6 +163,27 @@ abstract class Command {
   }
 
   /**
+   * Test whether the command is visible for its current state.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns `true` if the command is visible, `false` otherwise.
+   *
+   * #### Notes
+   * A subclass may reimplement this method as needed. If the state
+   * changes at runtime, the [[changed]] signal should be emitted.
+   *
+   * UI elements which have a visual representation of a command will
+   * typically not display a non-visible command.
+   *
+   * The default implementation of this method returns `true`.
+   */
+  isVisible(args: any): boolean {
+    return true;
+  }
+
+  /**
    * Test whether the command is checked for its current state.
    *
    * @param args - The arguments for the command. If the command does
@@ -195,23 +207,22 @@ abstract class Command {
 
 
 /**
- * Safely execute a command.
- *
- * @param command - The command to execute.
- *
- * @param args - The arguments for the command. If the command does
- *   not require arguments, this may be `null`.
- *
- * #### Notes
- * If the commmand throws an exception, it will be caught and logged.
+ * The namespace for the `Command` class statics.
  */
 export
-function safeExecute(command: Command, args: any): void {
-  try {
-    command.execute(args);
-  } catch (err) {
-    console.error(err);
-  }
+namespace Command {
+  /**
+   * A signal emitted when a command's state changes.
+   *
+   * #### Notes
+   * A command should emit this signal when its state changes.
+   *
+   * This is a static signal which passes the changed command as the
+   * argument for the signal. This reduces the number of connections
+   * in an application from potentially hundreds, to just a few.
+   */
+  export
+  const changed = (new Signal<typeof Command, Command>()).bind(Command);
 }
 
 
@@ -254,6 +265,11 @@ interface ISimpleCommandOptions {
    * The initial enabled state of the command.
    */
   enabled?: boolean;
+
+  /**
+   * The initial visible state of the command.
+   */
+  visible?: boolean;
 
   /**
    * The initial checked state of the command.
@@ -299,6 +315,9 @@ class SimpleCommand extends Command {
     }
     if (options.enabled !== void 0) {
       this._enabled = options.enabled;
+    }
+    if (options.visible !== void 0) {
+      this._visible = options.visible;
     }
     if (options.checked !== void 0) {
       this._checked = options.checked;
@@ -408,6 +427,23 @@ class SimpleCommand extends Command {
   }
 
   /**
+   * Test whether the command is visible for its current state.
+   *
+   * @param args - The arguments for the command. If the command does
+   *   not require arguments, this may be `null`.
+   *
+   * @returns `true` if the command is visible, `false` otherwise.
+   *
+   * #### Notes
+   * This method ignores the command arguments.
+   *
+   * **See also** [[setVisible]]
+   */
+  isVisible(args: any): boolean {
+    return this._visible;
+  }
+
+  /**
    * Test whether the command is checked for its current state.
    *
    * @param args - The arguments for the command. If the command does
@@ -437,7 +473,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._text = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -453,7 +489,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._icon = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -469,7 +505,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._caption = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -485,7 +521,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._category = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -501,7 +537,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._className = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -517,7 +553,23 @@ class SimpleCommand extends Command {
       return;
     }
     this._enabled = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
+  }
+
+  /**
+   * Set the visible state for the command.
+   *
+   * @param value - The visible state for the command.
+   *
+   * #### Notes
+   * If the state changes, the [[changed]] signal will be emitted.
+   */
+  setVisible(value: boolean): void {
+    if (this._visible === value) {
+      return;
+    }
+    this._visible = value;
+    Command.changed.emit(this);
   }
 
   /**
@@ -533,7 +585,7 @@ class SimpleCommand extends Command {
       return;
     }
     this._checked = value;
-    this.changed.emit(void 0);
+    Command.changed.emit(this);
   }
 
   /**
@@ -547,7 +599,11 @@ class SimpleCommand extends Command {
    * undefined behavior.
    */
   execute(args: any) {
-    this._handler.call(void 0, args);
+    try {
+      this._handler.call(void 0, args);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   private _text = '';
@@ -556,18 +612,186 @@ class SimpleCommand extends Command {
   private _category = '';
   private _className = '';
   private _enabled = true;
+  private _visible = true;
   private _checked = false;
   private _handler: (args: any) => void;
 }
 
 
 /**
- * The namespace for the `Command` class private data.
+ * An options object for initializing a command item.
  */
-namespace CommandPrivate {
+export
+interface ICommandItemOptions {
   /**
-   * A signal emitted when a command's state changes.
+   * The command for the command item.
    */
-  export
-  const changedSignal = new Signal<Command, void>();
+  command: Command;
+
+  /**
+   * The arguments for the command.
+   */
+  args?: any;
+
+  /**
+   * The keyboard shortcut decoration.
+   */
+  shortcut?: string;
+}
+
+
+/**
+ * A read-only object which combines a command and arguments.
+ *
+ * #### Notes
+ * This class is useful for UI controls which render commands for
+ * a given set of arguments, such as a menu or a command palette.
+ *
+ * Even though a command item is read-only, a command may still mutate
+ * its own state in-place which may change the computed item data. The
+ * consumer of a command item should connect to the `Command.changed`
+ * signal if it needs to be notified of command state changes.
+ */
+export
+class CommandItem {
+  /**
+   * Construct a new command item.
+   *
+   * @param options - The options for initializing the command item.
+   */
+  constructor(options: ICommandItemOptions) {
+    this._command = options.command;
+    this._args = options.args || null;
+    this._shortcut = options.shortcut || '';
+  }
+
+  /**
+   * Get the command for the command item.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get command(): Command {
+    return this._command;
+  }
+
+  /**
+   * Get the arguments for the command.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get args(): any {
+    return this._args;
+  }
+
+  /**
+   * Get the keyboard shortcut decoration.
+   *
+   * #### Notes
+   * The keyboard shortcut decoration is data which is explicitly *not*
+   * derived from or intrinsic to the command. This allows the keyboard
+   * shortcut to be defined externally as a user preference instead of
+   * in advance by the author of the command.
+   *
+   * This is a read-only property.
+   */
+  get shortcut(): string {
+    return this._shortcut;
+  }
+
+  /**
+   * Get the display text for the command item.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get text(): string {
+    return this._command.text(this._args);
+  }
+
+  /**
+   * Get the class name(s) for the command item icon.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get icon(): string {
+    return this._command.icon(this._args);
+  }
+
+  /**
+   * Get the short caption for the command item.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get caption(): string {
+    return this._command.caption(this._args);
+  }
+
+  /**
+   * Get the category for the command item.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get category(): string {
+    return this._command.category(this._args);
+  }
+
+  /**
+   * Get the extra class name(s) for the command item.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get className(): string {
+    return this._command.className(this._args);
+  }
+
+  /**
+   * Test whether the command item is enabled.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get isEnabled(): boolean {
+    return this._command.isEnabled(this._args);
+  }
+
+  /**
+   * Test whether the command item is visible.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get isVisible(): boolean {
+    return this._command.isVisible(this._args);
+  }
+
+  /**
+   * Test whether the command item is checked.
+   *
+   * #### Notes
+   * This is a read-only property.
+   */
+  get isChecked(): boolean {
+    return this._command.isChecked(this._args);
+  }
+
+  /**
+   * Execute the command items.
+   *
+   * #### Notes
+   * Calling `execute` when `isEnabled` is `false` may result in
+   * undefined behavior.
+   */
+  execute(): void {
+    this._command.execute(this._args);
+  }
+
+  private _command: Command;
+  private _args: any;
+  private _shortcut: string;
 }

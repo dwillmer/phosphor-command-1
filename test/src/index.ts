@@ -612,7 +612,7 @@ describe('phosphor-command', () => {
 
     describe('#isVisible', () => {
 
-      it('should be true by default', () => {
+      it('should delegate to the internal command', () => {
         expect(cmdItem.isVisible).to.be(true);
       });
 
@@ -629,8 +629,7 @@ describe('phosphor-command', () => {
 
     describe('#isChecked', () => {
 
-      it('should be false by default', () => {
-        let cmdItem = new CommandItem({ command: cmd, args: args });
+      it('should delegate to the internal command', () => {
         expect(cmdItem.isChecked).to.be(false);
       });
 

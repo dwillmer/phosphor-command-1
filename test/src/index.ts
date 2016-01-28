@@ -496,36 +496,189 @@ describe('phosphor-command', () => {
 
     });
 
-    describe('#CommandItem', () => {
+  });
+
+  describe('CommandItem', () => {
+
+    it('should accept an options object', () => {
+      let called = false;
+      let args = 1;
+      let count = 0;
+      let func = (a: any) => { called = true; count = a; }
+      let cmd = new SimpleCommand({ handler: func });
+      let options = {
+        command: cmd,
+        args: args
+      } as ICommandItemOptions;
+
+      let cmdItem = new CommandItem(options);
+
+      expect(cmdItem.shortcut).to.be('');
+      expect(cmdItem.text).to.be('');
+      expect(cmdItem.icon).to.be('');
+      expect(cmdItem.caption).to.be('');
+      expect(cmdItem.category).to.be('');
+      expect(cmdItem.command).to.be(cmd);
+      expect(cmdItem.args).to.be(args);
+      expect(cmdItem.className).to.be('');
+      expect(cmdItem.isEnabled).to.be(true);
+      expect(cmdItem.isVisible).to.be(true);
+      expect(cmdItem.isChecked).to.be(false);
+      expect(count).to.be(0);
+      cmdItem.execute();
+      expect(count).to.be(1);
+    });
+
+    describe('#constructor()', () => {
 
       it('should accept an options object', () => {
-        let called = false;
-        let args = 1;
-        let count = 0;
-        let func = (a: any) => { called = true; count = a; }
-        let cmd = new SimpleCommand({ handler: func });
-        let options = {
-          command: cmd,
-          args: args
-        } as ICommandItemOptions;
 
-        let cmdItem = new CommandItem(options);
-
-        expect(cmdItem.shortcut).to.be('');
-        expect(cmdItem.text).to.be('');
-        expect(cmdItem.icon).to.be('');
-        expect(cmdItem.caption).to.be('');
-        expect(cmdItem.category).to.be('');
-        expect(cmdItem.command).to.be(cmd);
-        expect(cmdItem.args).to.be(args);
-        expect(cmdItem.className).to.be('');
-        expect(cmdItem.isEnabled).to.be(true);
-        expect(cmdItem.isVisible).to.be(true);
-        expect(cmdItem.isChecked).to.be(false);
-        expect(count).to.be(0);
-        cmdItem.execute();
-        expect(count).to.be(1);
       });
+
+    });
+
+    describe('#command', () => {
+
+      it('should be the command passed to the constructor', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#args', () => {
+
+      it('should be the args passed to the constructor', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#shortcut', () => {
+
+      it('should be the shortcut passed to the constructor', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#text', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#icon', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#caption', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#category', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#className', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#isEnabled', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#isVisible', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#isChecked', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
+    });
+
+    describe('#execute()', () => {
+
+      it('should delegate to the internal command', () => {
+
+      });
+
+      it('should be read-only', () => {
+
+      });
+
     });
 
   });

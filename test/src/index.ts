@@ -604,6 +604,10 @@ describe('phosphor-command', () => {
         expect(cmdItem.isEnabled).to.be(false);
       });
 
+      it('should be read-only', () => {
+        expect(() => { cmdItem.isEnabled = false; }).to.throwError();
+      });
+
     });
 
     describe('#isVisible', () => {

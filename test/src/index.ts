@@ -23,11 +23,11 @@ class TestCommand extends Command {
 describe('phosphor-command', () => {
 
   describe('Command', () => {
+    let cmd = new TestCommand();
 
     describe('#constructor()', () => {
 
       it('should create a new command', () => {
-        let cmd = new TestCommand();
         expect(cmd instanceof Command).to.be(true);
       });
 
@@ -36,7 +36,6 @@ describe('phosphor-command', () => {
     describe('#text()', () => {
 
       it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.text(null)).to.be('');
       });
 
@@ -45,7 +44,6 @@ describe('phosphor-command', () => {
     describe('#icon()', () => {
 
       it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.icon(null)).to.be('');
       });
 
@@ -54,7 +52,6 @@ describe('phosphor-command', () => {
     describe('#caption()', () => {
 
       it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.caption(null)).to.be('');
       });
 
@@ -63,7 +60,6 @@ describe('phosphor-command', () => {
     describe('#category()', () => {
 
       it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.category(null)).to.be('');
       });
 
@@ -72,7 +68,6 @@ describe('phosphor-command', () => {
     describe('#className()', () => {
 
       it('should be an empty string by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.className(null)).to.be('');
       });
 
@@ -81,7 +76,6 @@ describe('phosphor-command', () => {
     describe('#isEnabled()', () => {
 
       it('should be `true` by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.isEnabled(null)).to.be(true);
       });
 
@@ -90,16 +84,14 @@ describe('phosphor-command', () => {
     describe('#isVisible()', () => {
 
       it('should be `true` by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.isVisible(null)).to.be(true);
       });
 
     });
 
-    describe('isChecked()', () => {
+    describe('#isChecked()', () => {
 
       it('should be `false` by default', () => {
-        let cmd = new TestCommand();
         expect(cmd.isChecked(null)).to.be(false);
       });
 
@@ -108,13 +100,28 @@ describe('phosphor-command', () => {
   });
 
   describe('SimpleCommand', () => {
+    let cmd: SimpleCommand = null;
+    let tgt: Command = null;
+
+    beforeEach(() => {
+      cmd = new SimpleCommand({
+        handler: () => { },
+        text: 'testText',
+        icon: 'testIcon',
+        caption: 'testCaption',
+        category: 'testCategory',
+        className: 'testClassName',
+        enabled: false,
+        visible: false,
+        checked: true
+      });
+      tgt = null;
+      Command.changed.connect((s, c) => { tgt = c; });
+    });
 
     describe('#constructor()', () => {
 
       it('should accept command options', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         expect(cmd instanceof SimpleCommand).to.be(true);
       });
 
@@ -123,11 +130,12 @@ describe('phosphor-command', () => {
     describe('#text()', () => {
 
       it('should reflect the command text', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          text: 'foo',
-        });
+        cmd.setText('foo');
         expect(cmd.text(null)).to.be('foo');
+      });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.text(null)).to.be('testText');
       });
 
     });
@@ -135,11 +143,12 @@ describe('phosphor-command', () => {
     describe('#icon()', () => {
 
       it('should reflect the command icon', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          icon: 'fa fa-close',
-        });
+        cmd.setIcon('fa fa-close');
         expect(cmd.icon(null)).to.be('fa fa-close');
+      });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.icon(null)).to.be('testIcon');
       });
 
     });
@@ -147,11 +156,12 @@ describe('phosphor-command', () => {
     describe('#caption()', () => {
 
       it('should reflect the command caption', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          caption: 'green eggs and ham',
-        });
+        cmd.setCaption('green eggs and ham');
         expect(cmd.caption(null)).to.be('green eggs and ham');
+      });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.caption('null')).to.be('testCaption');
       });
 
     });
@@ -159,11 +169,12 @@ describe('phosphor-command', () => {
     describe('#category()', () => {
 
       it('should reflect the command category', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          category: 'Seuss',
-        });
+        cmd.setCategory('Seuss');
         expect(cmd.category(null)).to.be('Seuss');
+      });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.category(null)).to.be('testCategory');
       });
 
     });
@@ -171,22 +182,29 @@ describe('phosphor-command', () => {
     describe('#className()', () => {
 
       it('should reflect the command class name', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          className: 'blue',
-        });
+        cmd.setClassName('blue');
         expect(cmd.className(null)).to.be('blue');
+      });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.className(null)).to.be('testClassName');
       });
 
     });
 
     describe('#isEnabled()', () => {
 
+      it('should default to true', () => {
+        let cmd = new SimpleCommand({ handler: () => { } });
+        expect(cmd.isEnabled(null)).to.be(true);
+      });
+
       it('should reflect the command enabled state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          enabled: false,
-        });
+        cmd.setEnabled(false);
+        expect(cmd.isEnabled(null)).to.be(false);
+      });
+
+      it('should be settable via the command object', () => {
         expect(cmd.isEnabled(null)).to.be(false);
       });
 
@@ -194,87 +212,77 @@ describe('phosphor-command', () => {
 
     describe('#isVisible()', () => {
 
+      it('should default to true', () => {
+        let cmd = new SimpleCommand({ handler: () => { } });
+        expect(cmd.isEnabled(null)).to.be(true);
+      })
+
       it('should reflect the command visible state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          visible: false,
-        });
+        cmd.setVisible(true);
+        expect(cmd.isVisible(null)).to.be(true);
+        cmd.setVisible(false);
+        expect(cmd.isVisible(null)).to.be(false);
+      });
+
+      it('should be settable via the command object', () => {
         expect(cmd.isVisible(null)).to.be(false);
       });
 
     });
 
-    describe('isChecked()', () => {
+    describe('#isChecked()', () => {
+
+      it('should default to true', () => {
+        let cmd = new SimpleCommand({ handler: () => { } });
+        expect(cmd.isChecked(null)).to.be(false);
+      });
 
       it('should reflect the command checked state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-          checked: true,
-        });
+        cmd.setChecked(false);
+        expect(cmd.isChecked(null)).to.be(false);
+        cmd.setChecked(true);
         expect(cmd.isChecked(null)).to.be(true);
       });
+
+      it('should be settable via the options object', () => {
+        expect(cmd.isChecked(null)).to.be(true);
+      })
 
     });
 
     describe('#setText()', () => {
 
       it('should set the command text', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setText('foo');
         expect(cmd.text(null)).to.be('foo');
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setText('foo');
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setText('');
+        cmd.setText('testText');
         expect(tgt).to.be(null);
       });
 
     });
 
-    describe('setIcon()', () => {
+    describe('#setIcon()', () => {
 
       it('should set the command icon', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setIcon('fa fa-close');
         expect(cmd.icon(null)).to.be('fa fa-close');
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setIcon('fa fa-close');
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setIcon('');
+        cmd.setIcon('testIcon');
         expect(tgt).to.be(null);
       });
 
@@ -283,30 +291,17 @@ describe('phosphor-command', () => {
     describe('#setCaption()', () => {
 
       it('should set the command caption', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setCaption('green eggs and ham');
         expect(cmd.caption(null)).to.be('green eggs and ham');
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCaption('green eggs and ham');
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setCaption('');
+        cmd.setCaption('testCaption');
         expect(tgt).to.be(null);
       });
 
@@ -315,30 +310,17 @@ describe('phosphor-command', () => {
     describe('#setCategory()', () => {
 
       it('should set the command category', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setCategory('Seuss');
         expect(cmd.category(null)).to.be('Seuss');
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setCategory('Seuss');
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setCategory('');
+        cmd.setCategory('testCategory');
         expect(tgt).to.be(null);
       });
 
@@ -347,30 +329,17 @@ describe('phosphor-command', () => {
     describe('#setClassName()', () => {
 
       it('should set the command class name', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setClassName('blue');
         expect(cmd.className(null)).to.be('blue');
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
         cmd.setClassName('blue');
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setClassName('');
+        cmd.setClassName('testClassName');
         expect(tgt).to.be(null);
       });
 
@@ -379,30 +348,17 @@ describe('phosphor-command', () => {
     describe('#setEnabled()', () => {
 
       it('should set the command enabled state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setEnabled(false);
         expect(cmd.isEnabled(null)).to.be(false);
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setEnabled(false);
+        cmd.setEnabled(true);
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setEnabled(true);
+        cmd.setEnabled(false);
         expect(tgt).to.be(null);
       });
 
@@ -411,30 +367,17 @@ describe('phosphor-command', () => {
     describe('#setVisible()', () => {
 
       it('should set the command visible state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setVisible(false);
         expect(cmd.isVisible(null)).to.be(false);
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setVisible(false);
+        cmd.setVisible(true);
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setVisible(true);
+        cmd.setVisible(false);
         expect(tgt).to.be(null);
       });
 
@@ -443,39 +386,26 @@ describe('phosphor-command', () => {
     describe('#setChecked()', () => {
 
       it('should set the command checked state', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
         cmd.setChecked(true);
         expect(cmd.isChecked(null)).to.be(true);
       });
 
       it('should emit the changed signal if changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setChecked(true);
+        cmd.setChecked(false);
         expect(tgt).to.be(cmd);
       });
 
       it('should not emit the changed signal if not changed', () => {
-        let cmd = new SimpleCommand({
-          handler: () => { },
-        });
-        let tgt: Command = null;
-        Command.changed.connect((s, c) => { tgt = c; });
-        cmd.setChecked(false);
+        cmd.setChecked(true);
         expect(tgt).to.be(null);
       });
 
     });
 
     describe('#execute()', () => {
+      let args: any = null;
 
       it('should invoke the handler function', () => {
-        let args: any = null;
         let called = false;
         let func = (a: any) => { called = true; args = a; };
         let cmd = new SimpleCommand({ handler: func });
@@ -486,7 +416,6 @@ describe('phosphor-command', () => {
       });
 
       it('should not propagate handler error', () => {
-        let args: any = null;
         let called = false;
         let func = (a: any) => { called = true; throw "Should not propagate"; };
         let cmd = new SimpleCommand({ handler: func });
@@ -499,184 +428,185 @@ describe('phosphor-command', () => {
   });
 
   describe('CommandItem', () => {
+    let cmd: SimpleCommand = null;
+    let cmdItem: CommandItem = null;
+    let options: ICommandItemOptions = null;
+    let count = 0;
+    let args = 1;
 
-    it('should accept an options object', () => {
-      let called = false;
-      let args = 1;
-      let count = 0;
-      let func = (a: any) => { called = true; count = a; }
-      let cmd = new SimpleCommand({ handler: func });
-      let options = {
+    beforeEach(() => {
+      count = 0;
+      let func = (a: any) => { count = a; };
+      cmd = new SimpleCommand({ handler: func });
+      options = {
         command: cmd,
-        args: args
-      } as ICommandItemOptions;
-
-      let cmdItem = new CommandItem(options);
-
-      expect(cmdItem.shortcut).to.be('');
-      expect(cmdItem.text).to.be('');
-      expect(cmdItem.icon).to.be('');
-      expect(cmdItem.caption).to.be('');
-      expect(cmdItem.category).to.be('');
-      expect(cmdItem.command).to.be(cmd);
-      expect(cmdItem.args).to.be(args);
-      expect(cmdItem.className).to.be('');
-      expect(cmdItem.isEnabled).to.be(true);
-      expect(cmdItem.isVisible).to.be(true);
-      expect(cmdItem.isChecked).to.be(false);
-      expect(count).to.be(0);
-      cmdItem.execute();
-      expect(count).to.be(1);
+        args: args,
+        shortcut: 'testShortcut',
+      };
+      cmdItem = new CommandItem(options);
     });
 
     describe('#constructor()', () => {
 
-      it('should accept an options object', () => {
-
-      });
-
-    });
-
-    describe('#command', () => {
-
-      it('should be the command passed to the constructor', () => {
-
-      });
-
-      it('should be read-only', () => {
-
+      it('should accept an options object with just command', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.command).to.be(cmd);
       });
 
     });
 
     describe('#args', () => {
 
-      it('should be the args passed to the constructor', () => {
+      it('should be null by default', () => {
+        let cmdItem = new CommandItem({ command: cmd });
+        expect(cmdItem.args).to.be(null);
+      });
 
+      it('should be the args passed to the constructor', () => {
+        expect(cmdItem.args).to.be(args);
       });
 
       it('should be read-only', () => {
-
+        expect(() => { cmdItem.args = 0; }).to.throw(Error);
       });
 
     });
 
     describe('#shortcut', () => {
 
-      it('should be the shortcut passed to the constructor', () => {
-
+      it('should be an empty string by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.shortcut).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable by the options object', () => {
+        expect(cmdItem.shortcut).to.be('testShortcut');
       });
 
     });
 
     describe('#text', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be an empty string by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.text).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setText method', () => {
+        cmd.setText('otherText');
+        expect(cmdItem.text).to.be('otherText');
       });
 
     });
 
     describe('#icon', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be an empty string by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.icon).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setIcon method', () => {
+        cmd.setIcon('otherIcon');
+        expect(cmdItem.icon).to.be('otherIcon');
       });
 
     });
 
     describe('#caption', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be an empty string by default', () => {
+        let cmditem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.caption).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setCaption method', () => {
+        cmd.setCaption('otherCaption');
+        expect(cmdItem.caption).to.be('otherCaption');
       });
 
     });
 
     describe('#category', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be an empty string by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.category).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setCategory method', () => {
+        cmd.setCategory('otherCategory');
+        expect(cmdItem.category).to.be('otherCategory');
       });
 
     });
 
     describe('#className', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be an empty string by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.className).to.be('');
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setClassName method', () => {
+        cmd.setClassName('otherClassName');
+        expect(cmdItem.className).to.be('otherClassName');
       });
 
     });
 
     describe('#isEnabled', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be true by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.isEnabled).to.be(true);
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setEnabled method', () => {
+        cmd.setEnabled(true);
+        expect(cmdItem.isEnabled).to.be(true);
       });
 
     });
 
     describe('#isVisible', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be true by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.isVisible).to.be(true);
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setVisible method', () => {
+        cmd.setVisible(true);
+        expect(cmdItem.isVisible).to.be(true);
       });
 
     });
 
     describe('#isChecked', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be false by default', () => {
+        let cmdItem = new CommandItem({ command: cmd, args: args });
+        expect(cmdItem.isChecked).to.be(false);
       });
 
-      it('should be read-only', () => {
-
+      it('should be settable via the command setChecked method', () => {
+        cmd.setChecked(false);
+        expect(cmdItem.isChecked).to.be(false);
       });
 
     });
 
-    describe('#execute()', () => {
+    describe('#command', () => {
 
-      it('should delegate to the internal command', () => {
-
+      it('should be set by default', () => {
+        expect(cmdItem.command).to.be(cmd);
       });
 
-      it('should be read-only', () => {
-
+      it('should execute without error', () => {
+        expect(count).to.be(0);
+        cmdItem.execute();
+        expect(count).to.be(1);
       });
 
     });

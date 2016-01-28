@@ -130,11 +130,6 @@ describe('phosphor-command', () => {
     describe('#text()', () => {
 
       it('should reflect the command text', () => {
-        cmd.setText('foo');
-        expect(cmd.text(null)).to.be('foo');
-      });
-
-      it('should be settable via the options object', () => {
         expect(cmd.text(null)).to.be('testText');
       });
 
@@ -142,12 +137,7 @@ describe('phosphor-command', () => {
 
     describe('#icon()', () => {
 
-      it('should reflect the command icon', () => {
-        cmd.setIcon('fa fa-close');
-        expect(cmd.icon(null)).to.be('fa fa-close');
-      });
-
-      it('should be settable via the options object', () => {
+      it('should reflect the options icon', () => {
         expect(cmd.icon(null)).to.be('testIcon');
       });
 
@@ -156,11 +146,6 @@ describe('phosphor-command', () => {
     describe('#caption()', () => {
 
       it('should reflect the command caption', () => {
-        cmd.setCaption('green eggs and ham');
-        expect(cmd.caption(null)).to.be('green eggs and ham');
-      });
-
-      it('should be settable via the options object', () => {
         expect(cmd.caption('null')).to.be('testCaption');
       });
 
@@ -182,11 +167,6 @@ describe('phosphor-command', () => {
     describe('#className()', () => {
 
       it('should reflect the command class name', () => {
-        cmd.setClassName('blue');
-        expect(cmd.className(null)).to.be('blue');
-      });
-
-      it('should be settable via the options object', () => {
         expect(cmd.className(null)).to.be('testClassName');
       });
 
@@ -200,11 +180,6 @@ describe('phosphor-command', () => {
       });
 
       it('should reflect the command enabled state', () => {
-        cmd.setEnabled(false);
-        expect(cmd.isEnabled(null)).to.be(false);
-      });
-
-      it('should be settable via the command object', () => {
         expect(cmd.isEnabled(null)).to.be(false);
       });
 
@@ -214,17 +189,10 @@ describe('phosphor-command', () => {
 
       it('should default to true', () => {
         let cmd = new SimpleCommand({ handler: () => { } });
-        expect(cmd.isEnabled(null)).to.be(true);
+        expect(cmd.isVisible(null)).to.be(true);
       })
 
       it('should reflect the command visible state', () => {
-        cmd.setVisible(true);
-        expect(cmd.isVisible(null)).to.be(true);
-        cmd.setVisible(false);
-        expect(cmd.isVisible(null)).to.be(false);
-      });
-
-      it('should be settable via the command object', () => {
         expect(cmd.isVisible(null)).to.be(false);
       });
 
@@ -238,15 +206,8 @@ describe('phosphor-command', () => {
       });
 
       it('should reflect the command checked state', () => {
-        cmd.setChecked(false);
-        expect(cmd.isChecked(null)).to.be(false);
-        cmd.setChecked(true);
         expect(cmd.isChecked(null)).to.be(true);
       });
-
-      it('should be settable via the options object', () => {
-        expect(cmd.isChecked(null)).to.be(true);
-      })
 
     });
 
@@ -461,12 +422,6 @@ describe('phosphor-command', () => {
         expect(cmdItem.command).to.be(cmd);
       });
 
-      it('should execute without error', () => {
-        expect(count).to.be(0);
-        cmdItem.execute();
-        expect(count).to.be(1);
-      });
-
       it('should be read-only', () => {
         let newCmd = new SimpleCommand({ handler: () => { } });
         expect(() => { cmdItem.command = newCmd; }).to.throwError();
@@ -531,11 +486,6 @@ describe('phosphor-command', () => {
         expect(cmdItem.icon).to.be('');
       });
 
-      it('should be settable via the command setIcon method', () => {
-        cmd.setIcon('otherIcon');
-        expect(cmdItem.icon).to.be('otherIcon');
-      });
-
       it('should be read-only', () => {
         expect(() => { cmdItem.icon = 'test'; }).to.throwError();
       });
@@ -546,11 +496,6 @@ describe('phosphor-command', () => {
 
       it('should delegate to the internal command', () => {
         expect(cmdItem.caption).to.be('');
-      });
-
-      it('should be settable via the command setCaption method', () => {
-        cmd.setCaption('otherCaption');
-        expect(cmdItem.caption).to.be('otherCaption');
       });
 
       it('should be read-only', () => {
@@ -565,11 +510,6 @@ describe('phosphor-command', () => {
         expect(cmdItem.category).to.be('');
       });
 
-      it('should be settable via the command setCategory method', () => {
-        cmd.setCategory('otherCategory');
-        expect(cmdItem.category).to.be('otherCategory');
-      });
-
       it('should be read-only', () => {
         expect(() => { cmdItem.category = 'test'; }).to.throwError();
       });
@@ -580,11 +520,6 @@ describe('phosphor-command', () => {
 
       it('should delegate to the internal command', () => {
         expect(cmdItem.className).to.be('');
-      });
-
-      it('should be settable via the command setClassName method', () => {
-        cmd.setClassName('otherClassName');
-        expect(cmdItem.className).to.be('otherClassName');
       });
 
       it('should be read-only', () => {
@@ -599,11 +534,6 @@ describe('phosphor-command', () => {
         expect(cmdItem.isEnabled).to.be(true);
       });
 
-      it('should be settable via the command setEnabled method', () => {
-        cmd.setEnabled(false);
-        expect(cmdItem.isEnabled).to.be(false);
-      });
-
       it('should be read-only', () => {
         expect(() => { cmdItem.isEnabled = false; }).to.throwError();
       });
@@ -614,11 +544,6 @@ describe('phosphor-command', () => {
 
       it('should delegate to the internal command', () => {
         expect(cmdItem.isVisible).to.be(true);
-      });
-
-      it('should be settable via the command setVisible method', () => {
-        cmd.setVisible(false);
-        expect(cmdItem.isVisible).to.be(false);
       });
 
       it('should be read-only', () => {
@@ -633,13 +558,18 @@ describe('phosphor-command', () => {
         expect(cmdItem.isChecked).to.be(false);
       });
 
-      it('should be settable via the command setChecked method', () => {
-        cmd.setChecked(false);
-        expect(cmdItem.isChecked).to.be(false);
-      });
-
       it('should be read-only', () => {
         expect(() => { cmdItem.isChecked = true; }).to.throwError();
+      });
+
+    });
+
+    describe('#execute()', () => {
+
+      it('should delegate to the internal command', () => {
+        expect(count).to.be(0);
+        cmdItem.execute();
+        expect(count).to.be(1);
       });
 
     });
